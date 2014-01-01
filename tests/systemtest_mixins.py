@@ -2,7 +2,6 @@
 Mixin classes for different system tests that may be used
 under different environments or configurations.
 """
-import zmq
 
 from .. import client, utils
 

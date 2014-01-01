@@ -1,7 +1,7 @@
 import os
 
 from .. import _compat, bootstrap, client, configs
-from . import systemtest_mixins
+from test import systemtest_mixins
 
 
 def make_client():
