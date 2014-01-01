@@ -96,6 +96,11 @@ Note that your client and server need to know what port to communicate on
 beforehand (we use ``9023`` in the previous examples).
 This also means we can only have one server/application process running.
 
+You can also set the ``DCCAUTO_INPROC_PORT`` environment variable
+to set the port (usually before launching the process),
+instead of hard-coding it to a number.
+Do not pass in a port number, and the environment variable will be read.
+
 Using a well-known server and one or more clients can be useful when
 exploring how code works.
 You can open up a GUI session of your application,
