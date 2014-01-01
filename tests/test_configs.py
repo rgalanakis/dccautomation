@@ -1,14 +1,14 @@
-from .. import _compat, configs
+from dccautomation import compat, configs
 
 
-class UnsupportedConfigTests(_compat.unittest.TestCase):
+class UnsupportedConfigTests(compat.unittest.TestCase):
 
     def test_raises_on_call(self):
         with self.assertRaises(configs.UnsupportedConfig):
             configs.UnsupportedConfig('foo')()
 
 
-class ConfigByNameTests(_compat.unittest.TestCase):
+class ConfigByNameTests(compat.unittest.TestCase):
 
     def test_raises_if_not_found(self):
         with self.assertRaises(configs.UnsupportedConfig):

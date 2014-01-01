@@ -1,7 +1,7 @@
-from .. import _compat, utils
+from dccautomation import compat, utils
 
 
-class LoggerTests(_compat.unittest.TestCase):
+class LoggerTests(compat.unittest.TestCase):
 
     def test_all(self):
         def assert_result(endpoint, ideal):

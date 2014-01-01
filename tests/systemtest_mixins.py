@@ -3,10 +3,10 @@ Mixin classes for different system tests that may be used
 under different environments or configurations.
 """
 
-from .. import client, utils
+from dccautomation import utils, Closed, InvalidMethod, Timeout
 
 
-# noinspection PyUnresolvedReferences,PyPep8Naming
+# noinspection PyPep8Naming
 class SystemTests(object):
 
     @classmethod
@@ -32,17 +32,17 @@ class SystemTests(object):
 
     def test_timeout(self):
         self.client.timeout_secs = 0.0
-        with self.assertRaises(client.Timeout):
+        with self.assertRaises(Timeout):
             self.client.exec_('import time; time.sleep(0.1')
 
     def test_invalid_method(self):
-        with self.assertRaises(client.InvalidMethod):
+        with self.assertRaises(InvalidMethod):
             self.client.sendrecv(['abc', 1])
 
     def test_close(self):
         cl = self.new_client()
         self.assertFalse(utils.is_open(cl.serverproc.endpoint))
         cl.close_all()
-        with self.assertRaises(client.Closed):
+        with self.assertRaises(Closed):
             cl.exec_('1')
         self.assertTrue(utils.is_open(cl.serverproc.endpoint))

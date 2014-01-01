@@ -1,7 +1,7 @@
-from .. import configs, testcase
+from dccautomation import configs, RemoteTestCase
 
 
-class TestcaseTests(testcase.RemoteTestCase):
+class TestcaseTests(RemoteTestCase):
     """
     There's no good test for this yet.
     This is just a stub.

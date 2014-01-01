@@ -1,9 +1,9 @@
 import mock
 
-from .. import _compat, common, inproc
+from dccautomation import compat, common, inproc
 
 
-class DefaultPortTests(_compat.unittest.TestCase):
+class DefaultPortTests(compat.unittest.TestCase):
 
     def test_default(self):
         self.assertEqual(inproc.get_default_port(), inproc.DEFAULT_INPROC_PORT)

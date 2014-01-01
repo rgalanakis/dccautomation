@@ -2,14 +2,14 @@ import os
 
 import mock
 
-from .. import (
-    _compat, bootstrap, client, common, configs, inproc, server, utils)
-from test import systemtest_mixins
+from dccautomation import (
+    compat, bootstrap, client, common, configs, inproc, server, utils)
+from . import systemtest_mixins
 
 
 @mock.patch('os.environ', {})
 class StartServerWithHandshakeTests(systemtest_mixins.SystemTests,
-                                    _compat.unittest.TestCase):
+                                    compat.unittest.TestCase):
 
     @classmethod
     def new_client(cls):
@@ -22,7 +22,7 @@ class StartServerWithHandshakeTests(systemtest_mixins.SystemTests,
 
 @mock.patch('os.environ', {})
 class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
-                                  _compat.unittest.TestCase):
+                                  compat.unittest.TestCase):
     # We need to make sure each call to new_client doesn't use the same
     # address as a previous call, so increment.
     _port_counter = 1025
@@ -38,7 +38,7 @@ class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
 
 
 @mock.patch('os.environ', {})
-class StartServerFatalErrorTests(_compat.unittest.TestCase):
+class StartServerFatalErrorTests(compat.unittest.TestCase):
 
     def test_no_config_name(self):
         with self.assertRaises(SystemExit):

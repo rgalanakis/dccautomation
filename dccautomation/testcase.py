@@ -2,7 +2,7 @@ import sys
 import traceback
 
 from . import bootstrap, Client
-from ._compat import unittest
+from .compat import unittest
 
 
 class RemoteTestCase(unittest.TestCase):

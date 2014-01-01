@@ -1,7 +1,7 @@
 import os
 
-from .. import _compat, bootstrap, client, configs
-from test import systemtest_mixins
+from dccautomation import compat, bootstrap, client, configs
+from . import systemtest_mixins
 
 
 def make_client():
@@ -11,7 +11,7 @@ def make_client():
     return c
 
 
-class IpcSystemTests(systemtest_mixins.SystemTests, _compat.unittest.TestCase):
+class IpcSystemTests(systemtest_mixins.SystemTests, compat.unittest.TestCase):
 
     @classmethod
     def new_client(cls):
@@ -23,7 +23,7 @@ class IpcSystemTests(systemtest_mixins.SystemTests, _compat.unittest.TestCase):
         self.assertNotEqual(pid, os.getpid())
 
 
-class HandshakeTests(_compat.unittest.TestCase):
+class HandshakeTests(compat.unittest.TestCase):
     def setUp(self):
         self.clients = [make_client() for _ in range(2)]
 
@@ -37,7 +37,7 @@ class HandshakeTests(_compat.unittest.TestCase):
                 'probably only one started and bound properly.')
 
 
-class HandshakerTests(_compat.unittest.TestCase):
+class HandshakerTests(compat.unittest.TestCase):
 
     def test_does_not_handshake_if_error_occurred(self):
         with self.assertRaises(ZeroDivisionError):
