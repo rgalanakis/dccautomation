@@ -38,7 +38,7 @@ class Config(object):
     The same configuration should be used by client and server.
     """
     host = '127.0.0.1'
-    port = 9091
+    port = 0
 
     def dumps(self, data):
         return json.dumps(data)
