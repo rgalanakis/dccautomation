@@ -81,7 +81,8 @@ class Maya2015OSXConfig(Config):
 
 
 def config_by_name(classname):
-    for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass):
-        if cls.__name__ == classname:
+    for membername, cls in inspect.getmembers(
+            sys.modules[__name__], inspect.isclass):
+        if membername == classname:
             return cls()
     raise RuntimeError('No config found for %r' % classname)
