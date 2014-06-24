@@ -2,10 +2,32 @@
 Contains the :class:`Config` base class,
 and a number of pre-defined subclasses for popular DCC applications
 and platforms.
+You can get a config instance by its class name using
+:func:`conf_by_name`.
 """
 
+import atexit
+import inspect
 import json
+import os
+import subprocess
 import sys
+import zmq
+
+
+def _one_up_dir(f):
+    return os.path.dirname(os.path.dirname(f))
+
+
+def start_server_process(config):
+    env = dict(os.environ)
+    env['PYTHONPATH'] += '{sep}{}{sep}{}'.format(
+        _one_up_dir(__file__),
+        _one_up_dir(zmq.__file__),
+        sep=os.path.pathsep)
+    proc = subprocess.Popen(config.popen_args(), env=env)
+    atexit.register(proc.kill)
+    return proc
 
 
 class Config(object):
@@ -38,7 +60,7 @@ class CurrentPython(Config):
         return [
             self.exe,
             '-c',
-            'import dccautomation as d; d.start_server()'
+            'import dccautomation as d; d.start_server("CurrentPython")'
         ]
 
 
@@ -54,5 +76,12 @@ class Maya2015OSXConfig(Config):
         return [
             '/Applications/Autodesk/maya2015/Maya.app/Contents/bin/maya',
             '-command',
-            'python("import dccautomation as d; d.start_server()")'
+            'python("import dccautomation as d; d.start_server(\"Maya\")")'
         ]
+
+
+def config_by_name(classname):
+    for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass):
+        if cls.__name__ == classname:
+            return cls()
+    raise RuntimeError('No config found for %r' % classname)

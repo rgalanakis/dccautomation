@@ -5,7 +5,8 @@ import zmq
 from . import configs, statuscodes
 
 
-def start_server():
+def start_server(configname):
+    config = configs.config_by_name(configname)
     sock = zmq.Context().socket(zmq.REP)
     sock.bind('tcp://%s:%s' % (config.host, config.port))
     while True:
