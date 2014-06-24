@@ -1,9 +1,7 @@
-from .. import configs, mayaauto, testcase
+from .. import mayaauto
 
 
-class MayaTests(testcase.RemoteTestCase):
-
-    config = configs.Maya
+class MayaTests(mayaauto.MayaTestCase):
 
     def test_is_in_maya(self):
         self.assertTrue(mayaauto.MAYA)
