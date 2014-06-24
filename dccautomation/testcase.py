@@ -1,6 +1,7 @@
 import sys
 import traceback
-import unittest
+
+from ._compat import unittest
 
 
 class RemoteTestCase(unittest.TestCase):

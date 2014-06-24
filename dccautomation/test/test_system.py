@@ -2,9 +2,9 @@
 System-level tests.
 """
 import os
-import unittest
 
 from . import start_test_server
+from .._compat import unittest
 
 
 class SystemTests(unittest.TestCase):
