@@ -2,29 +2,15 @@
 System-level tests.
 """
 import os
-import subprocess
 import unittest
-import zmq
 
-from .. import config, Client
+from . import start_test_server
 
 
 class SystemTests(unittest.TestCase):
-    proc = None
-
     @classmethod
     def setUpClass(cls):
-        env = dict(os.environ)
-        env['PYTHONPATH'] += '{sep}{}{sep}{}'.format(
-            os.path.dirname(config.__file__),
-            os.path.dirname(os.path.dirname(zmq.__file__)),
-            sep=os.path.pathsep)
-        cls.proc = subprocess.Popen(config.tester_proc_args, env=env)
-        cls.client = Client(config.host, config.port)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.proc.kill()
+        cls.client = start_test_server()[1]
 
     def test_is_another_proc(self):
         self.client.exec_('import os')
