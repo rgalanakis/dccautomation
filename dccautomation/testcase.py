@@ -22,7 +22,6 @@ class RemoteTestCase(unittest.TestCase):
         if cls._cached_client is None:
             c = cls.create_client()
         if cls.cache_client:
-            # noinspection PyUnboundLocalVariable
             cls._cached_client = c
         return c
 
