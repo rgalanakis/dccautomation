@@ -2,7 +2,7 @@ import threading
 import traceback
 import zmq
 
-from . import config, statuscodes
+from . import configs, statuscodes
 
 
 def start_server():
