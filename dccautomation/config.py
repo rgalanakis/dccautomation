@@ -1,24 +1,58 @@
+"""
+Contains the :class:`Config` base class,
+and a number of pre-defined subclasses for popular DCC applications
+and platforms.
+"""
+
 import json
 import sys
 
-host = '127.0.0.1'
-port = 9091
 
-pyproc_tester_args = [
-    sys.executable,
-    '-c',
-    'import dccautomation as d; d.start_server()'
-]
+class Config(object):
+    """
+    Configuration for a controllable process.
+    The same configuration should be used by client and server.
+    """
+    host = '127.0.0.1'
+    port = 9091
 
-mayaproc_test_args = [
-    '/Applications/Autodesk/maya2015/Maya.app/Contents/bin/maya',
-    '-command',
-    'python("import dccautomation as d; d.start_server()")'
-]
+    def dumps(self, data):
+        return json.dumps(data)
 
-dumps = json.dumps
-loads = json.loads
+    def loads(self, s):
+        return json.loads(s)
 
-SUCCESS = 200
-INVALID_METHOD = 400
-UNHANDLED_ERROR = 503
+    def popen_args(self):
+        """
+        Return a list of command line arguments used to start a process
+        and have it run an automation server.
+        """
+        raise NotImplementedError()
+
+
+class CurrentPython(Config):
+    port = 9092
+    exe = sys.executable
+
+    def popen_args(self):
+        return [
+            self.exe,
+            '-c',
+            'import dccautomation as d; d.start_server()'
+        ]
+
+
+class SystemPython(Config):
+    port = 9093
+    exe = 'python'
+
+
+class Maya2015OSXConfig(Config):
+    port = 9094
+
+    def popen_args(self):
+        return [
+            '/Applications/Autodesk/maya2015/Maya.app/Contents/bin/maya',
+            '-command',
+            'python("import dccautomation as d; d.start_server()")'
+        ]

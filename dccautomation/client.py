@@ -2,7 +2,7 @@ import exceptions
 import time
 import zmq
 
-from . import config
+from . import statuscodes
 
 
 class UnhandledError(RuntimeError):
@@ -18,19 +18,18 @@ class UnhandledResponse(RuntimeError):
 
 
 class Client(object):
-    def __init__(self, host, port, timeout_secs=50.0):
-        self.host = host
-        self.port = port
+    def __init__(self, config, timeout_secs=50.0):
+        self.config = config
         self.timeout_secs = timeout_secs
         self.socket = self._create_socket()
 
     def _create_socket(self):
         socket = zmq.Context().socket(zmq.REQ)
-        socket.connect('tcp://%s:%s' % (self.host, self.port))
+        socket.connect('tcp://%s:%s' % (self.config.host, self.config.port))
         return socket
 
     def sendrecv(self, data):
-        self.socket.send(config.dumps(data))
+        self.socket.send(self.config.dumps(data))
         starttime = time.time()
         while True:
             try:
@@ -43,13 +42,13 @@ class Client(object):
                 time.sleep(0.1)
 
         # noinspection PyUnboundLocalVariable
-        response = config.loads(recved)
+        response = self.config.loads(recved)
         code = response['code']
-        if code == config.SUCCESS:
+        if code == statuscodes.SUCCESS:
             return response['value']
-        if code == config.INVALID_METHOD:
+        if code == statuscodes.INVALID_METHOD:
             raise InvalidMethod('Sent invalid method: %s' % response['value'])
-        if code == config.UNHANDLED_ERROR:
+        if code == statuscodes.UNHANDLED_ERROR:
             errtype = getattr(exceptions, response['errtype'], UnhandledError)
             raise errtype(response['traceback'])
         raise UnhandledResponse('Unhandled response: %s, %s' % (

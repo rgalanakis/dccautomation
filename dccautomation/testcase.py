@@ -1,6 +1,7 @@
 import sys
 import traceback
 
+from . import Client, config
 from ._compat import unittest
 
 
@@ -15,7 +16,7 @@ class RemoteTestCase(unittest.TestCase):
         """
         :rtype: dccautomation.client.Client
         """
-        raise NotImplementedError()
+        return Client(config.host, config.port)
 
     @classmethod
     def _create_client(cls):
