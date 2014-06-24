@@ -27,6 +27,7 @@ def start_server_process(config):
         _one_up_dir(__file__),
         _one_up_dir(zmq.__file__),
         sep=os.path.pathsep)
+    env.update(config.popen_env(env))
     proc = subprocess.Popen(config.popen_args(), env=env)
     atexit.register(proc.kill)
     return proc
@@ -52,6 +53,17 @@ class Config(object):
         and have it run an automation server.
         """
         raise NotImplementedError()
+
+    def popen_env(self, original_env):
+        """
+        Return a dictionary of environment variables used when a new process
+        is started (see :meth:`popen_args`).
+
+        :param original_env: The environment that the return value of
+          this method mutates. Useful when you want to add to a
+          variable's value instead of totally replace it.
+        """
+        return {}
 
 
 class UnsupportedConfig(Config):
@@ -107,3 +119,23 @@ def config_by_name(classname):
         if membername == classname:
             return cls()
     raise RuntimeError('No config found for %r' % classname)
+
+
+class HandshakingConfig(Config):
+    def __init__(self, src_config_type):
+        handshakesock = zmq.Context().socket(zmq.REP)
+        self.handshake_port = handshakesock.bind_to_random_port(
+            'tcp://127.0.0.1')
+
+        src_config = src_config_type()
+        self.host = src_config.host
+        self.port = src_config.port
+        self.dumps = src_config.dumps
+        self.loads = src_config.loads
+        self.popen_args = src_config.popen_args
+
+    def __call__(self):
+        return self
+
+    def popen_env(self, original_env):
+        return {'DCCAUTO_HANDSHAKEPORT': str(self.handshake_port)}
