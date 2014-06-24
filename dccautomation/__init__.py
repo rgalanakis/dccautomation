@@ -1,30 +1,24 @@
-import atexit
-import subprocess
-import sys
-import urlparse
-import requests
+"""
+Allows remote control and automation of any process
+that hosts a Python interpreter.
+Right now it uses PyZMQ to communicate,
+but this may be changed to HTTP or another pure-Python mechanism in the future
+so there are no C dependencies which can be a pain to deploy for Maya.
 
-from . import httpserver
+Call :func:`dccautomation.server.start_server` in your application
+(through a macro shelf button or whatever)
+to start a server.
 
+Then create a :class:`dccautomation.client.ZmqClient` in your client process
+to communicate with it.
+Use the ``eval_`` and ``exec_`` methods on it to eval and exec code
+in your app,
+returning the printed output and status code.
 
-PORT = '8081'
+Things can be configured via a ``dccauto_conf.py`` file that is importable.
+See :mod:`dccautomation.config` for more information.
 
-
-def start_server():
-    args = [sys.executable, httpserver.__file__]
-    proc = subprocess.Popen(args)
-    atexit.register(proc.kill)
-    return 'http://localhost:' + PORT
-
-
-class HttpClient(object):
-    def __init__(self, endpoint):
-        self.endpoint = endpoint
-        self.evalendpoint = urlparse.urljoin(self.endpoint, '/eval')
-
-    def eval_(self, s):
-        got = requests.post(self.evalendpoint, params={'s': s})
-        if got.status_code != 200:
-
-            raise RuntimeError(got.content)
-        return got.json()['result']
+Use dccautomation.testcase.MayaRemoteTestCase as a base class
+for tests that you want to execute in your app but run from pure Python
+(such as if you run tests from your IDE, but they must be run in your DCC app).
+"""
