@@ -52,6 +52,14 @@ class Config(object):
         raise NotImplementedError()
 
 
+class UnsupportedConfig(Config):
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self):
+        raise RuntimeError('Config %s is not yet supported.' % self.name)
+
+
 class CurrentPython(Config):
     port = 9092
     exe = sys.executable
@@ -69,15 +77,21 @@ class SystemPython(Config):
     exe = 'python'
 
 
-class Maya2015OSXConfig(Config):
+class Maya2015OSX(Config):
     port = 9094
 
     def popen_args(self):
         return [
             '/Applications/Autodesk/maya2015/Maya.app/Contents/bin/maya',
             '-command',
-            'python("import dccautomation as d; d.start_server(\"Maya\")")'
+            'python("import dccautomation as d; d.start_server(\\"Maya\\")")'
         ]
+
+
+if sys.platform == 'darwin':
+    Maya = Maya2015OSX
+else:
+    Maya = UnsupportedConfig('maya linux/windows')
 
 
 def config_by_name(classname):

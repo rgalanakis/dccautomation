@@ -1,18 +1,9 @@
-import atexit
-import os
-import subprocess
-import zmq
-
-from .. import configs, Client, mayaauto, testcase
-
+from .. import configs, mayaauto, testcase
 
 
 class MayaTests(testcase.RemoteTestCase):
 
-    @classmethod
-    def create_client(cls):
-        assert not mayaauto.MAYA
-        return start_maya_server()[1]
+    config = configs.Maya
 
     def test_is_in_maya(self):
         self.assertTrue(mayaauto.MAYA)

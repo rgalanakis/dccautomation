@@ -11,7 +11,8 @@ class RemoteTestCase(unittest.TestCase):
     This is sort of magical, and you can generally stay out of it
     by overriding this class and some of its attributes::
 
-    - config: Set to an instance of configs.Config
+    - config: A subclass of :class:`dccautomation.configs.Config`.
+      Do *not* use an instance of it.
     - reload_test: If True, reload the test file before running each test.
     - cache_client: If True, use one client for all test methods.
         If False, use a new client for each test.
@@ -36,9 +37,10 @@ class RemoteTestCase(unittest.TestCase):
         if cls.config is None:
             raise RuntimeError(
                 'config must be set or this method must be overridden.')
+        config = cls.config()
         if cls.start_proc:
-            configs.start_server_process(cls.config)
-        return Client(cls.config)
+            configs.start_server_process(config)
+        return Client(config)
 
     @classmethod
     def _get_client(cls):

@@ -1,3 +1,7 @@
+MAYA = False
+maya = None
+pmc = None
+
 try:
     import maya
     import pymel.core as pmc
