@@ -1,12 +1,16 @@
 import json
+import sys
 
 host = '127.0.0.1'
 port = 9091
 
 tester_proc_args = [
-    '/Applications/Autodesk/maya2015/Maya.app/Contents/bin/maya',
-    '-command',
-    'python("import dccautomation as d; d.start_server()")'
+    # '/Applications/Autodesk/maya2015/Maya.app/Contents/bin/maya',
+    # '-command',
+    # 'python("import dccautomation as d; d.start_server()")'
+    sys.executable,
+    '-c',
+    'import dccautomation as d; d.start_server()'
 ]
 
 dumps = json.dumps

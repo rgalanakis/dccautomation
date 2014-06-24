@@ -21,11 +21,16 @@ def _start_server():
             else:
                 code = config.INVALID_METHOD
                 response = func
-            pickled = config.dumps([code, response])
-        except Exception:
-            pickled = config.dumps([
-                config.UNHANDLED_ERROR,
-                ''.join(traceback.format_exc())])
+            pickled = config.dumps({
+                'code': code,
+                'value': response
+            })
+        except Exception as ex:
+            pickled = config.dumps({
+                'code': config.UNHANDLED_ERROR,
+                'errtype': ex.__class__.__name__,
+                'traceback': ''.join(traceback.format_exc())
+            })
         sock.send(pickled)
 
 

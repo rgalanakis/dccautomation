@@ -1,3 +1,4 @@
+import exceptions
 import time
 import zmq
 
@@ -42,14 +43,15 @@ class Client(object):
                 time.sleep(0.1)
 
         # noinspection PyUnboundLocalVariable
-        code, response = config.loads(recved)
-
+        response = config.loads(recved)
+        code = response['code']
         if code == config.SUCCESS:
-            return response
-        if code == config.UNHANDLED_ERROR:
-            raise UnhandledError(response)
+            return response['value']
         if code == config.INVALID_METHOD:
-            raise InvalidMethod('Sent invalid method: %s' % response)
+            raise InvalidMethod('Sent invalid method: %s' % response['value'])
+        if code == config.UNHANDLED_ERROR:
+            errtype = getattr(exceptions, response['errtype'], UnhandledError)
+            raise errtype(response['traceback'])
         raise UnhandledResponse('Unhandled response: %s, %s' % (
             code, response))
 
