@@ -1,13 +1,9 @@
-from .. import testcase
-from . import start_test_server
+from .. import configs, testcase
 
 
 class TestcaseTests(testcase.RemoteTestCase):
 
-    @classmethod
-    def create_client(cls):
-        proc, client = start_test_server()
-        return client
+    config = configs.CurrentPython()
 
     def test_foo(self):
         self.assertTrue(True)

@@ -1,14 +1,31 @@
 import sys
 import traceback
 
-from . import Client, config
+from . import configs, Client
 from ._compat import unittest
 
 
 class RemoteTestCase(unittest.TestCase):
-    _cached_client = None
-    cache_client = True
+    """
+    Subclass for test classes which should execute in the DCC process.
+    This is sort of magical, and you can generally stay out of it
+    by overriding this class and some of its attributes::
+
+    - config: Set to an instance of configs.Config
+    - reload_test: If True, reload the test file before running each test.
+    - cache_client: If True, use one client for all test methods.
+        If False, use a new client for each test.
+        Clients are created through the :meth:`create_client` method.
+    - start_proc: If True, start a server process before creating the client.
+
+    Most of this behavior is used in the :meth:`create_client` method.
+    Override this method for advanced usage.
+    """
+    config = None
     reload_test = True
+    cache_client = True
+    start_proc = True
+    _cached_client = None
     __testMethodName = None
 
     @classmethod
@@ -16,19 +33,24 @@ class RemoteTestCase(unittest.TestCase):
         """
         :rtype: dccautomation.client.Client
         """
-        return Client(config.host, config.port)
+        if cls.config is None:
+            raise RuntimeError(
+                'config must be set or this method must be overridden.')
+        if cls.start_proc:
+            configs.start_server_process(cls.config)
+        return Client(cls.config)
 
     @classmethod
-    def _create_client(cls):
+    def _get_client(cls):
+        if not cls.cache_client:
+            return cls.create_client()
         if cls._cached_client is None:
-            c = cls.create_client()
-        if cls.cache_client:
-            cls._cached_client = c
-        return c
+            cls._cached_client = cls.create_client()
+        return cls._cached_client
 
     def run(self, result=None):
         try:
-            client = self._create_client()
+            client = self._get_client()
         except Exception:
             sys.stderr.write('Critical failure creating client for test:\n')
             sys.stderr.write('%s.%s' % (
