@@ -72,8 +72,8 @@ class RemoteTestCase(unittest.TestCase):
                 # setup and teardown should never call a subclass version,
 
         # since they should only run on the server.
-        self.setUp = lambda *a: None
-        self.tearDown = lambda *a: None
+        # noinspection PyAttributeOutsideInit
+        self.setUp, self.tearDown = lambda *a: None, lambda *a: None
         setattr(self, self._testMethodName, wrapped_test)
         unittest.TestCase.run(self, result)
 

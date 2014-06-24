@@ -21,7 +21,9 @@ def _one_up_dir(f):
 
 def start_server_process(config):
     env = dict(os.environ)
-    env['PYTHONPATH'] += '{sep}{}{sep}{}'.format(
+    pythonpath = env.get('PYTHONPATH', '')
+    env['PYTHONPATH'] = '{}{sep}{}{sep}{}'.format(
+        pythonpath,
         _one_up_dir(__file__),
         _one_up_dir(zmq.__file__),
         sep=os.path.pathsep)
