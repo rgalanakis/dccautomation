@@ -20,7 +20,7 @@ def start_test_server():
         os.path.dirname(config.__file__),
         os.path.dirname(os.path.dirname(zmq.__file__)),
         sep=os.path.pathsep)
-    proc = subprocess.Popen(config.tester_proc_args, env=env)
+    proc = subprocess.Popen(config.pyproc_tester_args, env=env)
     atexit.register(proc.kill)
     client = Client(config.host, config.port)
     return proc, client
