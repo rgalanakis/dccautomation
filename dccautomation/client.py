@@ -17,6 +17,10 @@ class UnhandledResponse(RuntimeError):
     pass
 
 
+class Timeout(RuntimeError):
+    pass
+
+
 class Client(object):
     def __init__(self, serverproc, timeout_secs=50.0):
         self.serverproc = serverproc
@@ -38,7 +42,7 @@ class Client(object):
             except zmq.Again:
                 if time.time() - starttime > self.timeout_secs:
                     self.socket = self._create_socket()
-                    raise
+                    raise Timeout('Timed out after %ss' % self.timeout_secs)
                 time.sleep(0.1)
 
         # noinspection PyUnboundLocalVariable
