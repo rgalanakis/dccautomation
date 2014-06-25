@@ -34,6 +34,11 @@ class Config(object):
         """
         raise NotImplementedError()
 
+    def exec_context(self):
+        """Return a callable will run exec and eval.
+        Useful if the exec and eval must occur on a certain thread."""
+        return lambda func, *a, **kw: func(*a, **kw)
+
 
 class UnsupportedConfig(Config, Exception):
     def __init__(self, name):
@@ -78,6 +83,12 @@ class Maya2015OSX(Config):
             '-command',
             'python("import dccautomation as d; d.start_server()")'
         ]
+
+    def exec_context(self):
+        import maya
+        if maya.cmds.about(batch=True):
+            return lambda func, *a, **kw: func(*a, **kw)
+        return maya.utils.executeInMainThreadWithResult
 
 
 Maya = _get_first_valid('maya linux/windows', Maya2015OSX)

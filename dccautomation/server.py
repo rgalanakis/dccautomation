@@ -19,6 +19,10 @@ def _get_appsock_from_handshake(handshake_endpoint):
     return app_info.socket
 
 
+def exec_(s):
+    exec s in globals(), globals()
+
+
 def start_server():
     configname = os.getenv(common.ENV_CONFIGNAME)
     if not configname:
@@ -36,6 +40,7 @@ def start_server():
         sock = zmq.Context().socket(zmq.REP)
         sock.bind(app_endpoint)
 
+    exec_context = config.exec_context()
     keep_going = True
     while keep_going:
         recved = sock.recv()
@@ -44,9 +49,9 @@ def start_server():
             code = common.SUCCESS
             response = None
             if func == 'exec':
-                exec arg in globals(), globals()
+                exec_context(exec_, arg)
             elif func == 'eval':
-                response = eval(arg, globals(), globals())
+                response = exec_context(eval, arg, globals(), globals())
             elif func == 'close':
                 keep_going = False
             else:
