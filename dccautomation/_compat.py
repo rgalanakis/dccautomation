@@ -1,4 +1,6 @@
 import sys
+# noinspection PyUnresolvedReferences
+import unittest  # For static analysis.
 
 try:
     import unittest2 as unittest
