@@ -25,7 +25,7 @@ def start_server():
         sys.exit('%s must be set.' % common.ENV_CONFIGNAME)
     config = configs.config_by_name(configname)
 
-    handshake_endpoint = os.getenv(common.ENV_HANDSHAKE)
+    handshake_endpoint = os.getenv(common.ENV_HANDSHAKE_ENDPOINT)
     if handshake_endpoint:
         sock = _get_appsock_from_handshake(handshake_endpoint)
     else:

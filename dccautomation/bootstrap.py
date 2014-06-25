@@ -27,7 +27,7 @@ class Handshaker(object):
 
     def __enter__(self):
         self._handshake_info = utils.create_rep_socket_bound_to_random()
-        self._environ[common.ENV_HANDSHAKE] = self._handshake_info.endpoint
+        self._environ[common.ENV_HANDSHAKE_ENDPOINT] = self._handshake_info.endpoint
         self._environ[common.ENV_CONFIGNAME] = self._config.cfgname()
         return self
 
