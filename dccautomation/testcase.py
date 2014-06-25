@@ -1,7 +1,7 @@
 import sys
 import traceback
 
-from . import configs, utils, Client
+from . import utils, Client
 from ._compat import unittest
 
 
