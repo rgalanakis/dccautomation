@@ -25,3 +25,4 @@ for tests that you want to execute in your app but run from pure Python
 
 from .client import Client
 from .server import start_server
+from . import configs
