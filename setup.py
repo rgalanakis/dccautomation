@@ -21,9 +21,9 @@ setup(
     url=__url__,
     packages=find_packages(),
     classifiers=[
-        # 'Development Status :: 4 - Beta',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
-        # 'License :: OSI Approved :: Apache Software License',
+        'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
