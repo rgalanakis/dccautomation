@@ -4,7 +4,7 @@ import threading
 import traceback
 import zmq
 
-from . import bootstrap, common, configs, utils
+from . import common, configs, utils
 
 
 def _get_appsock_from_handshake(handshake_endpoint):

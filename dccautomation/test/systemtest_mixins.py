@@ -4,16 +4,7 @@ under different environments or configurations.
 """
 import zmq
 
-from .. import client
-
-
-def try_bind(endpoint):
-    try:
-        sock = zmq.Context().socket(zmq.REP)
-        sock.bind(endpoint)
-        sock.close()
-    except zmq.ZMQError:
-        raise zmq.ZMQError('Endpoint %s already bound.' % endpoint)
+from .. import client, utils
 
 
 # noinspection PyUnresolvedReferences,PyPep8Naming
@@ -51,10 +42,8 @@ class SystemTests(object):
 
     def test_close(self):
         cl = self.new_client()
-
-        with self.assertRaises(zmq.ZMQError):
-            try_bind(cl.serverproc.endpoint)
+        self.assertFalse(utils.is_open(cl.serverproc.endpoint))
         cl.close_all()
         with self.assertRaises(client.Closed):
             cl.exec_('1')
-        try_bind(cl.serverproc.endpoint)
+        self.assertTrue(utils.is_open(cl.serverproc.endpoint))

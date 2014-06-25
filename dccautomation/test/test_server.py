@@ -2,7 +2,7 @@ import mock
 import os
 
 from . import systemtest_mixins
-from .. import _compat, bootstrap, client, common, configs, server
+from .. import _compat, bootstrap, client, common, configs, server, utils
 
 
 @mock.patch('os.environ', {})
@@ -29,7 +29,7 @@ class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
     def new_client(cls):
         cfg = configs.CurrentPython()
         ep = 'tcp://127.0.0.1:%s' % cls._port_counter
-        systemtest_mixins.try_bind(ep)
+        assert utils.is_open(ep)
         cls._port_counter += 1
         os.environ[common.ENV_CONFIGNAME] = cfg.cfgname()
         os.environ[common.ENV_APP_ENDPOINT] = ep

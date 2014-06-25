@@ -1,6 +1,16 @@
 import zmq
 
 
+def is_open(endpoint):
+    try:
+        sock = zmq.Context().socket(zmq.REP)
+        sock.bind(endpoint)
+        sock.close()
+        return True
+    except zmq.ZMQError:
+        return False
+
+
 class SocketConn(object):
     def __init__(self, socket, host, port):
         self.socket = socket
