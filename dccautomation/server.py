@@ -4,11 +4,11 @@ import threading
 import traceback
 import zmq
 
-from . import bootstrap, common, configs
+from . import bootstrap, common, configs, utils
 
 
 def _get_appsock_from_handshake(handshake_endpoint):
-    app_info = bootstrap.create_rep_socket_bound_to_random()
+    app_info = utils.create_rep_socket_bound_to_random()
 
     handshake_sock = zmq.Context().socket(zmq.REQ)
     handshake_sock.connect(handshake_endpoint)

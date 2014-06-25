@@ -3,22 +3,7 @@ import os
 import subprocess
 import zmq
 
-from . import common
-
-
-class SocketConn(object):
-    def __init__(self, socket, host, port):
-        self.socket = socket
-        self.host = host
-        self.port = port
-        self.endpoint = '%s:%s' % (host, port)
-
-
-def create_rep_socket_bound_to_random():
-    sock = zmq.Context().socket(zmq.REP)
-    host = 'tcp://127.0.0.1'
-    port = sock.bind_to_random_port(host)
-    return SocketConn(sock, host, port)
+from . import common, utils
 
 
 def _one_up_dir(f):
@@ -41,7 +26,7 @@ class Handshaker(object):
         self.app_endpoint = None
 
     def __enter__(self):
-        self._handshake_info = create_rep_socket_bound_to_random()
+        self._handshake_info = utils.create_rep_socket_bound_to_random()
         self._environ[common.ENV_HANDSHAKE] = self._handshake_info.endpoint
         self._environ[common.ENV_CONFIGNAME] = self._config.cfgname()
         return self
