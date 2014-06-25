@@ -2,7 +2,7 @@ import exceptions
 import time
 import zmq
 
-from . import common
+from . import common, utils
 
 
 class UnhandledError(RuntimeError):
@@ -27,6 +27,7 @@ class Closed(RuntimeError):
 
 class Client(object):
     def __init__(self, serverproc, timeout_secs=50.0):
+        self.logger = utils.logger(__name__, serverproc.endpoint)
         self.serverproc = serverproc
         self.timeout_secs = timeout_secs
         self.socket = self._create_socket()
@@ -40,6 +41,7 @@ class Client(object):
     def sendrecv(self, data):
         if self._closed:
             raise Closed()
+        self.logger.debug('send: %s', data)
         self.socket.send(self.serverproc.config.dumps(data))
         starttime = time.time()
         while True:
@@ -54,6 +56,7 @@ class Client(object):
 
         # noinspection PyUnboundLocalVariable
         response = self.serverproc.config.loads(recved)
+        self.logger.debug('recv: %s', response)
         code = response['code']
         if code == common.SUCCESS:
             return response['value']

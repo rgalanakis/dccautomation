@@ -16,10 +16,10 @@ def _get_appsock_from_handshake(handshake_endpoint):
     handshake_sock.recv()
     handshake_sock.close()
 
-    return app_info.socket
+    return app_info.socket, app_info.endpoint
 
 
-def exec_(s):
+def _exec(s):
     exec s in globals(), globals()
 
 
@@ -31,7 +31,7 @@ def start_server():
 
     handshake_endpoint = os.getenv(common.ENV_HANDSHAKE_ENDPOINT)
     if handshake_endpoint:
-        sock = _get_appsock_from_handshake(handshake_endpoint)
+        sock, app_endpoint = _get_appsock_from_handshake(handshake_endpoint)
     else:
         app_endpoint = os.getenv(common.ENV_APP_ENDPOINT)
         if not app_endpoint:
@@ -40,34 +40,37 @@ def start_server():
         sock = zmq.Context().socket(zmq.REP)
         sock.bind(app_endpoint)
 
+    logger = utils.logger(__name__, app_endpoint)
     exec_context = config.exec_context()
     keep_going = True
     while keep_going:
         recved = sock.recv()
         try:
             func, arg = config.loads(recved)
+            logger.debug('recv: %s, %s', func, arg)
             code = common.SUCCESS
-            response = None
+            value = None
             if func == 'exec':
-                exec_context(exec_, arg)
+                exec_context(_exec, arg)
             elif func == 'eval':
-                response = exec_context(eval, arg, globals(), globals())
+                value = exec_context(eval, arg, globals(), globals())
             elif func == 'close':
                 keep_going = False
             else:
                 code = common.INVALID_METHOD
-                response = func
-            pickled = config.dumps({
+                value = func
+            response = {
                 'code': code,
-                'value': response
-            })
+                'value': value
+            }
         except Exception as ex:
-            pickled = config.dumps({
+            response = {
                 'code': common.UNHANDLED_ERROR,
                 'errtype': ex.__class__.__name__,
                 'traceback': ''.join(traceback.format_exc())
-            })
-        sock.send(pickled)
+            }
+        logger.debug('send: %s', response)
+        sock.send(config.dumps(response))
     sock.close()
 
 
