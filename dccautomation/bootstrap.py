@@ -42,7 +42,7 @@ def start_server_process(config):
     env = dict(os.environ)
     with Handshaker(config, env) as handshake:
         pythonpath = env.get('PYTHONPATH', '')
-        env['PYTHONPATH'] = '{}{sep}{}{sep}{}'.format(
+        env['PYTHONPATH'] = '{0}{sep}{1}{sep}{2}'.format(
             pythonpath,
             _one_up_dir(__file__),
             _one_up_dir(zmq.__file__),
