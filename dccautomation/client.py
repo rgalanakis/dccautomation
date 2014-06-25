@@ -2,7 +2,7 @@ import exceptions
 import time
 import zmq
 
-from . import statuscodes
+from . import common
 
 
 class UnhandledError(RuntimeError):
@@ -44,11 +44,11 @@ class Client(object):
         # noinspection PyUnboundLocalVariable
         response = self.serverproc.config.loads(recved)
         code = response['code']
-        if code == statuscodes.SUCCESS:
+        if code == common.SUCCESS:
             return response['value']
-        if code == statuscodes.INVALID_METHOD:
+        if code == common.INVALID_METHOD:
             raise InvalidMethod('Sent invalid method: %s' % response['value'])
-        if code == statuscodes.UNHANDLED_ERROR:
+        if code == common.UNHANDLED_ERROR:
             errtype = getattr(exceptions, response['errtype'], UnhandledError)
             raise errtype(response['traceback'])
         raise UnhandledResponse('Unhandled response: %s, %s' % (

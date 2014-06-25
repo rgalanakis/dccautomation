@@ -4,7 +4,7 @@ import threading
 import traceback
 import zmq
 
-from . import configs, statuscodes, utils
+from . import common, configs, utils
 
 
 def _get_appsock_from_handshake(handshake_endpoint):
@@ -29,12 +29,12 @@ def _get_appsock_from_config(config):
 
 
 def start_server():
-    configname = os.getenv(utils.ENV_CONFIGNAME)
+    configname = os.getenv(common.ENV_CONFIGNAME)
     if not configname:
-        sys.exit('%s must be set.' % utils.ENV_CONFIGNAME)
+        sys.exit('%s must be set.' % common.ENV_CONFIGNAME)
     config = configs.config_by_name(configname)
 
-    handshake_endpoint = os.getenv(utils.ENV_HANDSHAKE)
+    handshake_endpoint = os.getenv(common.ENV_HANDSHAKE)
     if handshake_endpoint:
         sock = _get_appsock_from_handshake(handshake_endpoint)
     else:
@@ -44,14 +44,14 @@ def start_server():
         recved = sock.recv()
         try:
             func, arg = config.loads(recved)
-            code = statuscodes.SUCCESS
+            code = common.SUCCESS
             response = None
             if func == 'exec':
                 exec arg in globals(), globals()
             elif func == 'eval':
                 response = eval(arg, globals(), globals())
             else:
-                code = statuscodes.INVALID_METHOD
+                code = common.INVALID_METHOD
                 response = func
             pickled = config.dumps({
                 'code': code,
@@ -59,7 +59,7 @@ def start_server():
             })
         except Exception as ex:
             pickled = config.dumps({
-                'code': statuscodes.UNHANDLED_ERROR,
+                'code': common.UNHANDLED_ERROR,
                 'errtype': ex.__class__.__name__,
                 'traceback': ''.join(traceback.format_exc())
             })

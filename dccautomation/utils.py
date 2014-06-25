@@ -3,9 +3,7 @@ import os
 import subprocess
 import zmq
 
-
-ENV_CONFIGNAME = 'DCCAUTO_CONFIGNAME'
-ENV_HANDSHAKE = 'DCCAUTO_HANDSHAKE'
+from . import common
 
 
 class SocketConn(object):
@@ -45,8 +43,8 @@ def start_server_process(config):
         _one_up_dir(__file__),
         _one_up_dir(zmq.__file__),
         sep=os.path.pathsep)
-    env[ENV_HANDSHAKE] = handshake_info.endpoint
-    env[ENV_CONFIGNAME] = config.cfgname()
+    env[common.ENV_HANDSHAKE] = handshake_info.endpoint
+    env[common.ENV_CONFIGNAME] = config.cfgname()
 
     proc = subprocess.Popen(config.popen_args(), env=env)
     atexit.register(proc.kill)
