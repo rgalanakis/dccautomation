@@ -19,12 +19,6 @@ def _get_appsock_from_handshake(handshake_endpoint):
     return app_info.socket
 
 
-def _get_appsock_from_config(config):
-    sock = zmq.Context().socket(zmq.REP)
-    sock.bind('tcp://%s:%s' % (config.host, config.port))
-    return sock
-
-
 def start_server():
     configname = os.getenv(common.ENV_CONFIGNAME)
     if not configname:
@@ -35,7 +29,12 @@ def start_server():
     if handshake_endpoint:
         sock = _get_appsock_from_handshake(handshake_endpoint)
     else:
-        sock = _get_appsock_from_config(configname)
+        app_endpoint = os.getenv(common.ENV_APP_ENDPOINT)
+        if not app_endpoint:
+            sys.exit('%s must be set if not using a handshake.'
+                     % common.ENV_APP_ENDPOINT)
+        sock = zmq.Context().socket(zmq.REP)
+        sock.bind(app_endpoint)
 
     while True:
         recved = sock.recv()

@@ -1,10 +1,12 @@
+import mock
 import os
 
 from . import test_system
-from .. import _compat, client, common, configs, server, utils
+from .. import client, common, configs, server, utils
 
 
-class StartServerTests(test_system.SystemTests):
+@mock.patch('os.environ', {})
+class StartServerWithHandshakeTests(test_system.SystemTests):
 
     @classmethod
     def setUpClass(cls):
@@ -13,3 +15,15 @@ class StartServerTests(test_system.SystemTests):
             server.start_server_thread()
         cls.client = client.Client(
             utils.ServerProc(None, handshake.app_endpoint, cfg))
+
+
+@mock.patch('os.environ', {})
+class StartServerNoHandshakeTests(test_system.SystemTests):
+    @classmethod
+    def setUpClass(cls):
+        cfg = configs.CurrentPython()
+        ep = 'tcp://127.0.0.1:9091'
+        os.environ[common.ENV_CONFIGNAME] = cfg.cfgname()
+        os.environ[common.ENV_APP_ENDPOINT] = ep
+        server.start_server_thread()
+        cls.client = client.Client(utils.ServerProc(None, ep, cfg))
