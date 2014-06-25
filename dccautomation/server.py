@@ -65,4 +65,5 @@ def start_server():
 
 def start_server_thread():
     t = threading.Thread(target=start_server)
+    t.daemon = True
     t.start()

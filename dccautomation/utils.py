@@ -1,4 +1,5 @@
 import atexit
+import contextlib
 import os
 import subprocess
 import zmq
@@ -33,22 +34,34 @@ class ServerProc(object):
         self.config = config
 
 
+class Handshaker(object):
+    def __init__(self, config, environ):
+        self._config = config
+        self._environ = environ
+        self._handshake_info = None
+        self.app_endpoint = None
+
+    def __enter__(self):
+        self._handshake_info = create_rep_socket_bound_to_random()
+        self._environ[common.ENV_HANDSHAKE] = self._handshake_info.endpoint
+        self._environ[common.ENV_CONFIGNAME] = self._config.cfgname()
+        return self
+
+    def __exit__(self, *_):
+        self.app_endpoint = self._handshake_info.socket.recv()
+        self._handshake_info.socket.send('')
+        self._handshake_info.socket.close()
+
+
 def start_server_process(config):
-    handshake_info = create_rep_socket_bound_to_random()
-
     env = dict(os.environ)
-    pythonpath = env.get('PYTHONPATH', '')
-    env['PYTHONPATH'] = '{}{sep}{}{sep}{}'.format(
-        pythonpath,
-        _one_up_dir(__file__),
-        _one_up_dir(zmq.__file__),
-        sep=os.path.pathsep)
-    env[common.ENV_HANDSHAKE] = handshake_info.endpoint
-    env[common.ENV_CONFIGNAME] = config.cfgname()
-
-    proc = subprocess.Popen(config.popen_args(), env=env)
-    atexit.register(proc.kill)
-    app_endpoint = handshake_info.socket.recv()
-    handshake_info.socket.send('')
-    handshake_info.socket.close()
-    return ServerProc(proc, app_endpoint, config)
+    with Handshaker(config, env) as handshake:
+        pythonpath = env.get('PYTHONPATH', '')
+        env['PYTHONPATH'] = '{}{sep}{}{sep}{}'.format(
+            pythonpath,
+            _one_up_dir(__file__),
+            _one_up_dir(zmq.__file__),
+            sep=os.path.pathsep)
+        proc = subprocess.Popen(config.popen_args(), env=env)
+        atexit.register(proc.kill)
+    return ServerProc(proc, handshake.app_endpoint, config)
