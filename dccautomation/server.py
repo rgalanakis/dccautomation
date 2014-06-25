@@ -36,7 +36,8 @@ def start_server():
         sock = zmq.Context().socket(zmq.REP)
         sock.bind(app_endpoint)
 
-    while True:
+    keep_going = True
+    while keep_going:
         recved = sock.recv()
         try:
             func, arg = config.loads(recved)
@@ -46,6 +47,8 @@ def start_server():
                 exec arg in globals(), globals()
             elif func == 'eval':
                 response = eval(arg, globals(), globals())
+            elif func == 'close':
+                keep_going = False
             else:
                 code = common.INVALID_METHOD
                 response = func
@@ -60,6 +63,7 @@ def start_server():
                 'traceback': ''.join(traceback.format_exc())
             })
         sock.send(pickled)
+    sock.close()
 
 
 def start_server_thread():

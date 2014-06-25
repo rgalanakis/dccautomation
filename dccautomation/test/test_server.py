@@ -10,25 +10,31 @@ class StartServerWithHandshakeTests(systemtest_mixins.SystemTests,
                                     _compat.unittest.TestCase):
 
     @classmethod
-    def setUpClass(cls):
+    def new_client(cls):
         cfg = configs.CurrentPython()
         with bootstrap.Handshaker(cfg, os.environ) as handshake:
             server.start_server_thread()
-        cls.client = client.Client(
+        return client.Client(
             bootstrap.ServerProc(None, handshake.app_endpoint, cfg))
 
 
 @mock.patch('os.environ', {})
 class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
                                   _compat.unittest.TestCase):
+    # We need to make sure each call to new_client doesn't use the same
+    # address as a previous call, so increment.
+    _port_counter = 1025
+
     @classmethod
-    def setUpClass(cls):
+    def new_client(cls):
         cfg = configs.CurrentPython()
-        ep = 'tcp://127.0.0.1:9091'
+        ep = 'tcp://127.0.0.1:%s' % cls._port_counter
+        systemtest_mixins.try_bind(ep)
+        cls._port_counter += 1
         os.environ[common.ENV_CONFIGNAME] = cfg.cfgname()
         os.environ[common.ENV_APP_ENDPOINT] = ep
         server.start_server_thread()
-        cls.client = client.Client(bootstrap.ServerProc(None, ep, cfg))
+        return client.Client(bootstrap.ServerProc(None, ep, cfg))
 
 
 @mock.patch('os.environ', {})

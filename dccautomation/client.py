@@ -21,11 +21,16 @@ class Timeout(RuntimeError):
     pass
 
 
+class Closed(RuntimeError):
+    pass
+
+
 class Client(object):
     def __init__(self, serverproc, timeout_secs=50.0):
         self.serverproc = serverproc
         self.timeout_secs = timeout_secs
         self.socket = self._create_socket()
+        self._closed = False
 
     def _create_socket(self):
         socket = zmq.Context().socket(zmq.REQ)
@@ -33,6 +38,8 @@ class Client(object):
         return socket
 
     def sendrecv(self, data):
+        if self._closed:
+            raise Closed()
         self.socket.send(self.serverproc.config.dumps(data))
         starttime = time.time()
         while True:
@@ -63,3 +70,8 @@ class Client(object):
 
     def exec_(self, s):
         return self.sendrecv(['exec', s])
+
+    def close_all(self):
+        self.sendrecv(['close', ''])
+        self.socket.close()
+        self._closed = True

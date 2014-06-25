@@ -11,10 +11,11 @@ def make_client():
     return c
 
 
-class IpcSystemTests(_compat.unittest.TestCase, systemtest_mixins.SystemTests):
+class IpcSystemTests(systemtest_mixins.SystemTests, _compat.unittest.TestCase):
+
     @classmethod
-    def setUpClass(cls):
-        cls.client = make_client()
+    def new_client(cls):
+        return make_client()
 
     def test_is_in_different_proc(self):
         self.client.exec_('import os')

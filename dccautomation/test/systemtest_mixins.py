@@ -2,13 +2,30 @@
 Mixin classes for different system tests that may be used
 under different environments or configurations.
 """
+import zmq
 
 from .. import client
 
 
-# noinspection PyUnresolvedReferences
+def try_bind(endpoint):
+    try:
+        sock = zmq.Context().socket(zmq.REP)
+        sock.bind(endpoint)
+        sock.close()
+    except zmq.ZMQError:
+        raise zmq.ZMQError('Endpoint %s already bound.' % endpoint)
+
+
+# noinspection PyUnresolvedReferences,PyPep8Naming
 class SystemTests(object):
-    client = None
+
+    @classmethod
+    def setUpClass(cls):
+        cls.client = cls.new_client()
+
+    @classmethod
+    def new_client(cls):
+        raise NotImplementedError()
 
     def test_eval(self):
         got = self.client.eval_('1 + 1')
@@ -31,3 +48,13 @@ class SystemTests(object):
     def test_invalid_method(self):
         with self.assertRaises(client.InvalidMethod):
             self.client.sendrecv(['abc', 1])
+
+    def test_close(self):
+        cl = self.new_client()
+
+        with self.assertRaises(zmq.ZMQError):
+            try_bind(cl.serverproc.endpoint)
+        cl.close_all()
+        with self.assertRaises(client.Closed):
+            cl.exec_('1')
+        try_bind(cl.serverproc.endpoint)
