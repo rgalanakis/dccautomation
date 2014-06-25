@@ -2,7 +2,8 @@ import mock
 import os
 
 from . import systemtest_mixins
-from .. import _compat, bootstrap, client, common, configs, server, utils
+from .. import (
+    _compat, bootstrap, client, common, configs, inproc, server, utils)
 
 
 @mock.patch('os.environ', {})
@@ -27,14 +28,12 @@ class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
 
     @classmethod
     def new_client(cls):
-        cfg = configs.CurrentPython()
-        ep = 'tcp://127.0.0.1:%s' % cls._port_counter
-        assert utils.is_open(ep)
         cls._port_counter += 1
-        os.environ[common.ENV_CONFIGNAME] = cfg.cfgname()
-        os.environ[common.ENV_APP_ENDPOINT] = ep
-        server.start_server_thread()
-        return client.Client(bootstrap.ServerProc(None, ep, cfg))
+        cfg = configs.CurrentPython()
+        cl = inproc.start_inproc_client(cfg, cls._port_counter)
+        assert utils.is_open(cl.serverproc.endpoint)
+        inproc.start_inproc_server(cfg, cls._port_counter)
+        return cl
 
 
 @mock.patch('os.environ', {})
