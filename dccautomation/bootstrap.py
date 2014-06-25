@@ -31,10 +31,11 @@ class Handshaker(object):
         self._environ[common.ENV_CONFIGNAME] = self._config.cfgname()
         return self
 
-    def __exit__(self, *_):
-        self.app_endpoint = self._handshake_info.socket.recv()
-        self._handshake_info.socket.send('')
-        self._handshake_info.socket.close()
+    def __exit__(self, exc_type, *_):
+        if exc_type is None:
+            self.app_endpoint = self._handshake_info.socket.recv()
+            self._handshake_info.socket.send('')
+            self._handshake_info.socket.close()
 
 
 def start_server_process(config):

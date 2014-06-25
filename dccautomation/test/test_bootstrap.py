@@ -35,3 +35,12 @@ class HandshakeTests(_compat.unittest.TestCase):
                 c.serverproc.popen.pid,
                 'Wrong process received eval, '
                 'probably only one started and bound properly.')
+
+
+class HandshakerTests(_compat.unittest.TestCase):
+
+    def test_does_not_handshake_if_error_occurred(self):
+        with self.assertRaises(ZeroDivisionError):
+            with bootstrap.Handshaker(configs.CurrentPython(), {}) as h:
+                _ = 1 / 0
+        self.assertIsNone(h.app_endpoint)
