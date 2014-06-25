@@ -99,4 +99,4 @@ def config_by_name(classname):
             sys.modules[__name__], inspect.isclass):
         if membername == classname:
             return cls()
-    raise RuntimeError('No config found for %r' % classname)
+    raise UnsupportedConfig('No config found for %r' % classname)
