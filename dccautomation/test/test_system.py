@@ -3,8 +3,7 @@ System-level tests.
 """
 import os
 
-from .. import client, configs, utils
-from .._compat import unittest
+from .. import _compat, client, configs, utils
 
 
 def make_client():
@@ -14,7 +13,7 @@ def make_client():
     return c
 
 
-class SystemTests(unittest.TestCase):
+class SystemTests(_compat.unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = make_client()
@@ -42,7 +41,7 @@ class SystemTests(unittest.TestCase):
             self.client.sendrecv(['abc', 1])
 
 
-class HandshakeTests(unittest.TestCase):
+class HandshakeTests(_compat.unittest.TestCase):
     def test_handshake_allows_multiple_procs(self):
         clients = [make_client() for _ in range(2)]
         for c in clients:
