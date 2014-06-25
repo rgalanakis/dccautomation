@@ -35,12 +35,13 @@ class Config(object):
         raise NotImplementedError()
 
 
-class UnsupportedConfig(Config):
+class UnsupportedConfig(Config, Exception):
     def __init__(self, name):
         self.name = name
+        Exception.__init__(self, 'Config %s is not yet supported.' % self.name)
 
     def __call__(self):
-        raise RuntimeError('Config %s is not yet supported.' % self.name)
+        raise self
 
 
 def _get_first_valid(unsupported_msg, *configs):
