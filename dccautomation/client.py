@@ -18,18 +18,18 @@ class UnhandledResponse(RuntimeError):
 
 
 class Client(object):
-    def __init__(self, config, timeout_secs=50.0):
-        self.config = config
+    def __init__(self, serverproc, timeout_secs=50.0):
+        self.serverproc = serverproc
         self.timeout_secs = timeout_secs
         self.socket = self._create_socket()
 
     def _create_socket(self):
         socket = zmq.Context().socket(zmq.REQ)
-        socket.connect('tcp://%s:%s' % (self.config.host, self.config.port))
+        socket.connect(self.serverproc.endpoint)
         return socket
 
     def sendrecv(self, data):
-        self.socket.send(self.config.dumps(data))
+        self.socket.send(self.serverproc.config.dumps(data))
         starttime = time.time()
         while True:
             try:
@@ -42,7 +42,7 @@ class Client(object):
                 time.sleep(0.1)
 
         # noinspection PyUnboundLocalVariable
-        response = self.config.loads(recved)
+        response = self.serverproc.config.loads(recved)
         code = response['code']
         if code == statuscodes.SUCCESS:
             return response['value']

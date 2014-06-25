@@ -3,7 +3,7 @@ System-level tests.
 """
 import os
 
-from .. import configs, Client
+from .. import configs, utils, Client
 from .._compat import unittest
 
 
@@ -11,8 +11,8 @@ class SystemTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         config = configs.CurrentPython()
-        configs.start_server_process(config)
-        cls.client = Client(config)
+        proc = utils.start_server_process(config)
+        cls.client = Client(proc)
 
     def test_is_another_proc(self):
         self.client.exec_('import os')
