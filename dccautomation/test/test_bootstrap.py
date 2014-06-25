@@ -1,6 +1,3 @@
-"""
-System-level tests.
-"""
 import os
 
 from .. import _compat, bootstrap, client, configs
@@ -14,23 +11,26 @@ def make_client():
     return c
 
 
-class SystemTests(_compat.unittest.TestCase, systemtest_mixins.SystemTests):
+class IpcSystemTests(_compat.unittest.TestCase, systemtest_mixins.SystemTests):
     @classmethod
     def setUpClass(cls):
         cls.client = make_client()
 
+    def test_is_in_different_proc(self):
+        self.client.exec_('import os')
+        pid = int(self.client.eval_('os.getpid()'))
+        self.assertNotEqual(pid, os.getpid())
+
 
 class HandshakeTests(_compat.unittest.TestCase):
-    def test_handshake_allows_multiple_procs(self):
-        clients = [make_client() for _ in range(2)]
-        for c in clients:
+    def setUp(self):
+        self.clients = [make_client() for _ in range(2)]
+
+    def test_handshake_supports_multiple_procs(self):
+        for c in self.clients:
             c.exec_('import os')
             self.assertEqual(
                 c.eval_('os.getpid()'),
                 c.serverproc.popen.pid,
                 'Wrong process received eval, '
                 'probably only one started and bound properly.')
-            self.assertNotEqual(
-                c.eval_('os.getpid()'),
-                os.getpid(),
-                'Evalled in this process, not sure why.')

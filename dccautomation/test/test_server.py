@@ -1,12 +1,13 @@
 import mock
 import os
 
-from . import test_system
-from .. import bootstrap, client, common, configs, server
+from . import systemtest_mixins
+from .. import _compat, bootstrap, client, common, configs, server
 
 
 @mock.patch('os.environ', {})
-class StartServerWithHandshakeTests(test_system.SystemTests):
+class StartServerWithHandshakeTests(systemtest_mixins.SystemTests,
+                                    _compat.unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -18,7 +19,8 @@ class StartServerWithHandshakeTests(test_system.SystemTests):
 
 
 @mock.patch('os.environ', {})
-class StartServerNoHandshakeTests(test_system.SystemTests):
+class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
+                                  _compat.unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cfg = configs.CurrentPython()
