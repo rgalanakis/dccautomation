@@ -1,7 +1,7 @@
 import sys
 import traceback
 
-from . import utils, Client
+from . import bootstrap, Client
 from ._compat import unittest
 
 
@@ -39,7 +39,7 @@ class RemoteTestCase(unittest.TestCase):
                 'config must be set or this method must be overridden.')
         config = cls.config()
         assert cls.start_proc, 'Not starting proc is not yet supported.'
-        proc = utils.start_server_process(config)
+        proc = bootstrap.start_server_process(config)
         return Client(proc)
 
     @classmethod

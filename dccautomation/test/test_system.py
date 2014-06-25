@@ -3,13 +3,13 @@ System-level tests.
 """
 import os
 
-from .. import _compat, client, configs, utils
+from .. import _compat, bootstrap, client, configs
 from . import systemtest_mixins
 
 
 def make_client():
     cfg = configs.CurrentPython()
-    proc = utils.start_server_process(cfg)
+    proc = bootstrap.start_server_process(cfg)
     c = client.Client(proc)
     return c
 

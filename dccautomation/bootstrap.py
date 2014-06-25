@@ -1,5 +1,4 @@
 import atexit
-import contextlib
 import os
 import subprocess
 import zmq
