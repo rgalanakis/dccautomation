@@ -1,3 +1,4 @@
+import logging
 import zmq
 
 
@@ -24,3 +25,14 @@ def create_rep_socket_bound_to_random():
     host = 'tcp://127.0.0.1'
     port = sock.bind_to_random_port(host)
     return SocketConn(sock, host, port)
+
+
+def logger(name, endpoint):
+    simple_endpoint = endpoint.split('://')[-1]
+    host, port = simple_endpoint.split(':')
+    if host in ('127.0.0.1', 'localhost'):
+        host = 'lo'
+    else:
+        host = host.replace('.', '_')
+    fullname = '%s.%s-%s' % (name, host, port)
+    return logging.getLogger(fullname)
