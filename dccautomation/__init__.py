@@ -23,6 +23,8 @@ for tests that you want to execute in your app but run from pure Python
 (such as if you run tests from your IDE, but they must be run in your DCC app).
 """
 
+from .bootstrap import ServerProc
 from .client import Client
-from .server import start_server
+from .server import start_server, start_server_thread
+from .testcase import RemoteTestCase
 from . import configs
