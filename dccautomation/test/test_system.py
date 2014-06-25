@@ -4,6 +4,7 @@ System-level tests.
 import os
 
 from .. import _compat, client, configs, utils
+from . import systemtest_mixins
 
 
 def make_client():
@@ -13,32 +14,10 @@ def make_client():
     return c
 
 
-class SystemTests(_compat.unittest.TestCase):
+class SystemTests(_compat.unittest.TestCase, systemtest_mixins.SystemTests):
     @classmethod
     def setUpClass(cls):
         cls.client = make_client()
-
-    def test_eval(self):
-        got = self.client.eval_('1 + 1')
-        self.assertEqual(got, 2)
-
-    def test_exec(self):
-        self.client.exec_('a = 2 + 1')
-        got = self.client.eval_('a')
-        self.assertEqual(got, 3)
-
-    def test_errortype_propagates(self):
-        with self.assertRaises(TypeError):
-            self.client.exec_('1 + ""')
-
-    def test_timeout(self):
-        self.client.timeout_secs = 0.0
-        with self.assertRaises(client.Timeout):
-            self.client.exec_('import time; time.sleep(0.1')
-
-    def test_invalid_method(self):
-        with self.assertRaises(client.InvalidMethod):
-            self.client.sendrecv(['abc', 1])
 
 
 class HandshakeTests(_compat.unittest.TestCase):
