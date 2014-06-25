@@ -7,12 +7,17 @@ from .. import configs, utils, Client
 from .._compat import unittest
 
 
+def make_client():
+    cfg = configs.CurrentPython()
+    proc = utils.start_server_process(cfg)
+    client = Client(proc)
+    return client
+
+
 class SystemTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        config = configs.CurrentPython()
-        proc = utils.start_server_process(config)
-        cls.client = Client(proc)
+        cls.client = make_client()
 
     def test_is_another_proc(self):
         self.client.exec_('import os')
@@ -31,3 +36,15 @@ class SystemTests(unittest.TestCase):
     def test_errortype_propagates(self):
         with self.assertRaises(TypeError):
             self.client.exec_('1 + ""')
+
+
+class HandshakeTests(unittest.TestCase):
+    def test_handshake_allows_multiple_procs(self):
+        clients = [make_client() for _ in range(2)]
+        for client in clients:
+            client.exec_('import os')
+            self.assertEqual(
+                client.eval_('os.getpid()'),
+                client.serverproc.popen.pid,
+                'Wrong process received eval, '
+                'probably only one started and bound properly.')
