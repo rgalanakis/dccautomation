@@ -4,22 +4,19 @@ import threading
 import traceback
 import zmq
 
-from . import common, configs
+from . import common, configs, utils
 
 
 def _get_appsock_from_handshake(handshake_endpoint):
-    app_sock = zmq.Context().socket(zmq.REP)
-    host = 'tcp://127.0.0.1'
-    app_port = app_sock.bind_to_random_port(host)
-    app_endpoint = '%s:%s' % (host, app_port)
+    app_info = utils.create_rep_socket_bound_to_random()
 
     handshake_sock = zmq.Context().socket(zmq.REQ)
     handshake_sock.connect(handshake_endpoint)
-    handshake_sock.send(app_endpoint)
+    handshake_sock.send(app_info.endpoint)
     handshake_sock.recv()
     handshake_sock.close()
 
-    return app_sock
+    return app_info.socket
 
 
 def _get_appsock_from_config(config):
