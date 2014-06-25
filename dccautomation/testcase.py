@@ -18,12 +18,15 @@ class RemoteTestCase(unittest.TestCase):
         If False, use a new client for each test.
         Clients are created through the :meth:`create_client` method.
     - start_proc: If True, start a server process before creating the client.
+    - reload_module: If supplied, reload this module before running a test.
+      It must be a module instance.
 
     Most of this behavior is used in the :meth:`create_client` method.
     Override this method for advanced usage.
     """
     config = None
     reload_test = True
+    reload_module = None
     cache_client = True
     start_proc = True
     _cached_client = None
@@ -83,18 +86,21 @@ class RemoteTestCase(unittest.TestCase):
         # (unlike 'run', which adjusts the test result).
         # We can look in the future at creating some sort of
         # pickle-able test result, which would in theory be safer.
-        teststr = 'import {testmodule} as {testalias}\n'
+        lines = ['import {testmodule} as {testalias}']
         if self.reload_test:
-            teststr += 'reload({testalias})\n'
-        teststr += """tc = {testalias}.{testcase}("{testfunc}")
-try:
+            lines.append('reload({testalias})')
+        lines.append('tc = {testalias}.{testcase}("{testfunc}")')
+        if self.reload_module is not None:
+            lines.append('reload(tc.reload_module)')
+        lines.append("""try:
     tc.setUp()
     tc.{testfunc}()
 finally:
-    tc.tearDown()"""
-        teststr = teststr.format(
+    tc.tearDown()""")
+        teststr = '\n'.join(lines)
+        formatted_str = teststr.format(
             testmodule=self.__module__,
             testalias=self.__module__.replace('.', '_'),
             testcase=type(self).__name__,
             testfunc=self.__testMethodName)
-        client.exec_(teststr)
+        client.exec_(formatted_str)
