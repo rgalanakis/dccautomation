@@ -29,3 +29,16 @@ class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
         os.environ[common.ENV_APP_ENDPOINT] = ep
         server.start_server_thread()
         cls.client = client.Client(bootstrap.ServerProc(None, ep, cfg))
+
+
+@mock.patch('os.environ', {})
+class StartServerFatalErrorTests(_compat.unittest.TestCase):
+
+    def test_no_config_name(self):
+        with self.assertRaises(SystemExit):
+            server.start_server()
+
+    def test_no_endpoint(self):
+        os.environ[common.ENV_CONFIGNAME] = configs.CurrentPython().cfgname()
+        with self.assertRaises(SystemExit):
+            server.start_server()
