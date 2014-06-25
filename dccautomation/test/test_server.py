@@ -1,15 +1,15 @@
 import os
-import zmq
 
+from . import test_system
 from .. import _compat, client, common, configs, server, utils
 
 
-class StartServerTests(_compat.unittest.TestCase):
+class StartServerTests(test_system.SystemTests):
 
-    def test_handshake(self):
+    @classmethod
+    def setUpClass(cls):
         cfg = configs.CurrentPython()
         with utils.Handshaker(cfg, os.environ) as handshake:
             server.start_server_thread()
-        c = client.Client(utils.ServerProc(None, handshake.app_endpoint, cfg))
-        got = c.eval_('1 + 1')
-        self.assertEqual(got, 2)
+        cls.client = client.Client(
+            utils.ServerProc(None, handshake.app_endpoint, cfg))

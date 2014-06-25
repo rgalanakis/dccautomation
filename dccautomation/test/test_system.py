@@ -19,11 +19,6 @@ class SystemTests(unittest.TestCase):
     def setUpClass(cls):
         cls.client = make_client()
 
-    def test_is_another_proc(self):
-        self.client.exec_('import os')
-        got = self.client.eval_('os.getpid()')
-        self.assertNotEqual(got, os.getpid())
-
     def test_eval(self):
         got = self.client.eval_('1 + 1')
         self.assertEqual(got, 2)
@@ -57,3 +52,7 @@ class HandshakeTests(unittest.TestCase):
                 c.serverproc.popen.pid,
                 'Wrong process received eval, '
                 'probably only one started and bound properly.')
+            self.assertNotEqual(
+                c.eval_('os.getpid()'),
+                os.getpid(),
+                'Evalled in this process, not sure why.')
