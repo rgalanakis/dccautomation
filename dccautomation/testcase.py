@@ -18,7 +18,7 @@ class RemoteTestCase(unittest.TestCase):
         If False, use a new client for each test.
         Clients are created through the :meth:`create_client` method.
     - start_proc: If True, start a server process before creating the client.
-    - reload_module: If supplied, reload this module before running a test.
+    - reload_modules: If supplied, reload these modules before running a test.
       It must be a module instance.
 
     Most of this behavior is used in the :meth:`create_client` method.
@@ -26,7 +26,7 @@ class RemoteTestCase(unittest.TestCase):
     """
     config = None
     reload_test = True
-    reload_module = None
+    reload_modules = []
     cache_client = True
     start_proc = True
     _cached_client = None
@@ -90,8 +90,8 @@ class RemoteTestCase(unittest.TestCase):
         if self.reload_test:
             lines.append('reload({testalias})')
         lines.append('tc = {testalias}.{testcase}("{testfunc}")')
-        if self.reload_module is not None:
-            lines.append('reload(tc.reload_module)')
+        lines.append("""for mod in tc.reload_modules:
+    reload(mod)""")
         lines.append("""try:
     tc.setUp()
     tc.{testfunc}()
