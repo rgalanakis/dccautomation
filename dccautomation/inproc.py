@@ -3,8 +3,11 @@ import os
 from . import bootstrap, client, common, server
 
 
+DEFAULT_INPROC_PORT = 9091
+
+
 def get_default_port():
-    return int(os.getenv(common.ENV_INPROC_PORT, 9091))
+    return int(os.getenv(common.ENV_INPROC_PORT, DEFAULT_INPROC_PORT))
 
 
 def start_inproc_client(config, port=None):
