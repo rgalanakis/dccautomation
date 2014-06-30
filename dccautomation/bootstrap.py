@@ -1,3 +1,8 @@
+"""
+Code having to do with how the client boostraps the server,
+such as process startup and handshaking.
+"""
+
 import atexit
 import os
 import subprocess
@@ -11,7 +16,16 @@ def _one_up_dir(f):
 
 
 class ServerProc(object):
+    """
+    Information about a server process.
 
+    :param popen: The ``subprocess.Popen`` instance representing the server
+      process. Can usually be None if you didn't start the process.
+    :type popen: subprocess.Popen
+    :param endpoint: Endpoint string pointing to the server process.
+    :param config: Configuration the server was started with.
+    :type config: dccautomation.configs.Confg
+    """
     def __init__(self, popen, endpoint, config):
         self.popen = popen
         self.endpoint = endpoint
@@ -19,6 +33,30 @@ class ServerProc(object):
 
 
 class Handshaker(object):
+    """
+    Context manager which encapsulates the
+    client and server handshake mechanism,
+    used to have the server bind to a unique port.
+    This class should only be used by the client.
+
+    On enter, a port will be bound to (the handshake port),
+    and items in ``environ`` are set so the server knows what the handshake
+    port is.
+
+    Under the context manager, the client should start the server,
+    usually using :func:`start_server_process`.
+    The server startup (see :func:`dccautomation.server.start_server`)
+    will send the environment variables to the server process.
+    On startup, the server will bind to its own port (the application port),
+    send that port number to the client, and wait for an acknowledgement.
+
+    On exit, the client will wait to hear the application port,
+    send an acknowledgement, and then close the handshake port.
+
+    :param config: dccautomation.configs.Config
+    :param environ: Environment variable dictionary.
+      Will be modified during handshake.
+    """
     def __init__(self, config, environ):
         self._config = config
         self._environ = environ
@@ -39,6 +77,11 @@ class Handshaker(object):
 
 
 def start_server_process(config):
+    """
+    Starts a new server process using the given config.
+
+    :type config: dccautomation.configs.Config
+    """
     env = dict(os.environ)
     with Handshaker(config, env) as handshake:
         pythonpath = env.get('PYTHONPATH', '')

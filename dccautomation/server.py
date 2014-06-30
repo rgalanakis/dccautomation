@@ -24,6 +24,11 @@ def _exec(s):
 
 
 def start_server():
+    """
+    Starts the server and polls in a loop.
+    The polling is blocking- eventually we may need to support
+    non-blocking polling.
+    """
     configname = os.getenv(common.ENV_CONFIGNAME)
     if not configname:
         sys.exit('%s must be set.' % common.ENV_CONFIGNAME)
@@ -75,6 +80,9 @@ def start_server():
 
 
 def start_server_thread():
+    """
+    Starts the server on a daemon thread.
+    """
     t = threading.Thread(target=start_server)
     t.daemon = True
     t.start()

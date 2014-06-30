@@ -3,7 +3,7 @@ Contains the :class:`Config` base class,
 and a number of pre-defined subclasses for popular DCC applications
 and platforms.
 You can get a config instance by its class name using
-:func:`conf_by_name`.
+:func:`config_by_name`.
 """
 
 import inspect
@@ -15,16 +15,28 @@ import sys
 class Config(object):
     """
     Configuration for a controllable process.
-    The same configuration should be used by client and server.
     """
 
     def cfgname(self):
+        """
+        Return the configuration name.
+        Used when many configs should share the same name
+        (such as various OS flavors of a DCC app).
+        """
         return type(self).__name__
 
     def dumps(self, data):
+        """
+        Dump the data into a string and return the string.
+        Defaults to ``json.dumps``.
+        """
         return json.dumps(data)
 
     def loads(self, s):
+        """
+        Load data from a string.
+        Defaults to ``json.loads``.
+        """
         return json.loads(s)
 
     def popen_args(self):
@@ -57,6 +69,10 @@ def _get_first_valid(unsupported_msg, *configs):
 
 
 class CurrentPython(Config):
+    """
+    The current executable.
+    Assumed to be a valid Python interpreter.
+    """
     exe = sys.executable
 
     def popen_args(self):
@@ -68,6 +84,10 @@ class CurrentPython(Config):
 
 
 class SystemPython(Config):
+    """
+    The system python interpreter
+    (what you'd get typing "python" from the command line).
+    """
     exe = 'python'
 
 
@@ -94,9 +114,9 @@ class Maya2015OSX(Config):
 Maya = _get_first_valid('maya linux/windows', Maya2015OSX)
 
 
-def config_by_name(classname):
+def config_by_name(name):
     for membername, cls in inspect.getmembers(
             sys.modules[__name__], inspect.isclass):
-        if membername == classname:
+        if membername == name:
             return cls()
-    raise UnsupportedConfig('No config found for %r' % classname)
+    raise UnsupportedConfig('No config found for %r' % name)
