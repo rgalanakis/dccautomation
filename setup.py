@@ -1,6 +1,14 @@
 from setuptools import find_packages, setup
 
-from dccautomation import version, __author__, __email__, __url__, __license__
+# from dccautomation import version, __author__, __email__, __url__, __license__
+version_info = 0, 0, 1
+version = '.'.join([str(v) for v in version_info])
+__version__ = version
+__author__ = 'Rob Galanakis'
+__email__ = 'rob.galanakis@gmail.com'
+__url__ = 'https://github.com/rgalanakis/dccautomation'
+__license__ = 'MIT'
+
 
 
 setup(
