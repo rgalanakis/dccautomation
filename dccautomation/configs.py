@@ -27,17 +27,17 @@ class Config(object):
 
     def dumps(self, data):
         """
-        Dump the data into a string and return the string.
-        Defaults to ``json.dumps``.
+        Dump the data into a string and return the string (bytes).
+        Defaults to ``json.dumps(data).encode('utf-8')``.
         """
-        return json.dumps(data)
+        return json.dumps(data).encode('utf-8')
 
     def loads(self, s):
         """
-        Load data from a string.
-        Defaults to ``json.loads``.
+        Load data from a string (bytes).
+        Defaults to ``json.loads(s.decode('utf-8'))``.
         """
-        return json.loads(s)
+        return json.loads(s.decode('utf-8'))
 
     def popen_args(self):
         """

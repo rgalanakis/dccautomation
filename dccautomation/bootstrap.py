@@ -71,8 +71,8 @@ class Handshaker(object):
 
     def __exit__(self, exc_type, *_):
         if exc_type is None:
-            self.app_endpoint = self._handshake_info.socket.recv()
-            self._handshake_info.socket.send('')
+            self.app_endpoint = self._config.loads(self._handshake_info.socket.recv())
+            self._handshake_info.socket.send(b'')
             self._handshake_info.socket.close()
 
 

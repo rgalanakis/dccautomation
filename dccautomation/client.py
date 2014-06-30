@@ -2,11 +2,10 @@
 All client-only code.
 """
 
-import exceptions
 import time
 import zmq
 
-from . import common, utils
+from . import common, compat, utils
 
 
 class UnhandledError(RuntimeError):
@@ -82,7 +81,8 @@ class Client(object):
         if code == common.INVALID_METHOD:
             raise InvalidMethod('Sent invalid method: %s' % response['value'])
         if code == common.UNHANDLED_ERROR:
-            errtype = getattr(exceptions, response['errtype'], UnhandledError)
+            errtype = getattr(
+                compat.builtins, response['errtype'], UnhandledError)
             raise errtype(response['traceback'])
         raise UnhandledResponse('Unhandled response: %s, %s' % (
             code, response))

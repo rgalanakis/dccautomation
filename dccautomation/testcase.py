@@ -86,7 +86,9 @@ class RemoteTestCase(unittest.TestCase):
         # (unlike 'run', which adjusts the test result).
         # We can look in the future at creating some sort of
         # pickle-able test result, which would in theory be safer.
-        lines = ['import {testmodule} as {testalias}']
+        lines = [
+            'import {testmodule} as {testalias}',
+            'from dccautomation.compat import reload']
         if self.reload_test:
             lines.append('reload({testalias})')
         lines.append('tc = {testalias}.{testcase}("{testfunc}")')

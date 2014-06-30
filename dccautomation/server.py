@@ -4,15 +4,15 @@ import threading
 import traceback
 import zmq
 
-from . import common, configs, utils
+from . import common, compat, configs, utils
 
 
-def _get_appsock_from_handshake(handshake_endpoint):
+def _get_appsock_from_handshake(config, handshake_endpoint):
     app_info = utils.create_rep_socket_bound_to_random()
 
     handshake_sock = zmq.Context().socket(zmq.REQ)
     handshake_sock.connect(handshake_endpoint)
-    handshake_sock.send(app_info.endpoint)
+    handshake_sock.send(config.dumps(app_info.endpoint))
     handshake_sock.recv()
     handshake_sock.close()
 
@@ -20,7 +20,7 @@ def _get_appsock_from_handshake(handshake_endpoint):
 
 
 def _exec(s):
-    exec s in globals(), globals()
+    compat.exec_(s, globals(), globals())
 
 
 def start_server():
@@ -36,7 +36,8 @@ def start_server():
 
     handshake_endpoint = os.getenv(common.ENV_HANDSHAKE_ENDPOINT)
     if handshake_endpoint:
-        sock, app_endpoint = _get_appsock_from_handshake(handshake_endpoint)
+        sock, app_endpoint = _get_appsock_from_handshake(
+            config, handshake_endpoint)
     else:
         app_endpoint = os.getenv(common.ENV_APP_ENDPOINT)
         if not app_endpoint:
