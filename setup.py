@@ -12,7 +12,8 @@ setup(
                 "any application that hosts a Python interpreter.",
     long_description=open('README.rst').read(),
     license=__license__,
-    keywords='TBD TBD',
+    keywords='automation remote host dcc maya autodesk photoshop automate '
+             'external control client server eval exec bootstrap handshake',
     url=__url__,
     packages=find_packages(),
     classifiers=[
