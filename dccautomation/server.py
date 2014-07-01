@@ -1,3 +1,4 @@
+import imp
 import os
 import sys
 import threading
@@ -19,8 +20,15 @@ def _get_appsock_from_handshake(config, handshake_endpoint):
     return app_info.socket, app_info.endpoint
 
 
-def _exec(s):
-    compat.exec_(s, globals(), globals())
+_execstate = {}
+
+
+def eval_(source):
+    return eval(source, _execstate, _execstate)
+
+
+def exec_(source):
+    return compat.exec_(source, _execstate, _execstate)
 
 
 def start_server():
@@ -57,9 +65,9 @@ def start_server():
             code = common.SUCCESS
             value = None
             if func == 'exec':
-                exec_context(_exec, arg)
+                exec_context(exec_, arg)
             elif func == 'eval':
-                value = exec_context(eval, arg, globals(), globals())
+                value = exec_context(eval_, arg)
             elif func == 'close':
                 keep_going = False
             else:

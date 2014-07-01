@@ -19,6 +19,13 @@ class StartServerWithHandshakeTests(systemtest_mixins.SystemTests,
         return client.Client(
             bootstrap.ServerProc(None, handshake.app_endpoint, cfg))
 
+    def test_eval_and_exec_do_not_modify_global_state(self):
+        func = server.start_server
+        for method in [self.client.eval_, self.client.exec_]:
+            with self.assertRaises(NameError):
+                # eval/exec should not have access to this function.
+                method('%s.__name__' % func.__name__)
+
 
 @mock.patch('os.environ', {})
 class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
