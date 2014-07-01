@@ -13,7 +13,9 @@ except ImportError:  # pragma: no cover
 if sys.version_info[0] == 2:
     # noinspection PyUnresolvedReferences
     import __builtin__ as builtins
-    globals()['reload'] = reload
+
+    # noinspection PyShadowingBuiltins
+    reload = reload
 
     # noinspection PyShadowingBuiltins
     def exec_(s, globals=None, locals=None):
@@ -23,9 +25,10 @@ if sys.version_info[0] == 2:
 else:
     # noinspection PyUnresolvedReferences
     import builtins
-    import imp
+
+    import imp as _imp
     # noinspection PyShadowingBuiltins
-    reload = imp.reload
+    reload = _imp.reload
 
     # noinspection PyShadowingBuiltins
     def exec_(s, globals=None, locals=None):
