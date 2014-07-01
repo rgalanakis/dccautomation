@@ -6,10 +6,10 @@ You can get a config instance by its class name using
 :func:`config_by_name`.
 """
 
-import inspect
-import json
-import os
-import sys
+import inspect as _inspect
+import json as _json
+import os as _os
+import sys as _sys
 
 
 class Config(object):
@@ -30,14 +30,14 @@ class Config(object):
         Dump the data into a string and return the string (bytes).
         Defaults to ``json.dumps(data).encode('utf-8')``.
         """
-        return json.dumps(data).encode('utf-8')
+        return _json.dumps(data).encode('utf-8')
 
     def loads(self, s):
         """
         Load data from a string (bytes).
         Defaults to ``json.loads(s.decode('utf-8'))``.
         """
-        return json.loads(s.decode('utf-8'))
+        return _json.loads(s.decode('utf-8'))
 
     def popen_args(self):
         """
@@ -63,7 +63,7 @@ class UnsupportedConfig(Config, Exception):
 
 def _get_first_valid(unsupported_msg, *configs):
     for cfg in configs:
-        if os.path.exists(cfg.exe):
+        if _os.path.exists(cfg.exe):
             return cfg
     return UnsupportedConfig(unsupported_msg)
 
@@ -73,7 +73,7 @@ class CurrentPython(Config):
     The current executable.
     Assumed to be a valid Python interpreter.
     """
-    exe = sys.executable
+    exe = _sys.executable
 
     def popen_args(self):
         return [
@@ -115,8 +115,8 @@ Maya = _get_first_valid('maya linux/windows', Maya2015OSX)
 
 
 def config_by_name(name):
-    for membername, cls in inspect.getmembers(
-            sys.modules[__name__], inspect.isclass):
+    for membername, cls in _inspect.getmembers(
+            _sys.modules[__name__], _inspect.isclass):
         if membername == name:
             return cls()
     raise UnsupportedConfig('No config found for %r' % name)
