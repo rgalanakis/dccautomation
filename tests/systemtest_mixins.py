@@ -3,7 +3,7 @@ Mixin classes for different system tests that may be used
 under different environments or configurations.
 """
 
-from dccautomation import utils, Closed, InvalidMethod, Timeout
+from dccautomation import compat, utils, Closed, InvalidMethod, Timeout
 
 
 # noinspection PyPep8Naming
@@ -46,3 +46,8 @@ class SystemTests(object):
         with self.assertRaises(Closed):
             cl.exec_('1')
         self.assertTrue(utils.is_open(cl.serverproc.endpoint))
+
+    def test_skipped_is_reraised_and_not_an_error(self):
+        with self.assertRaises(compat.unittest.SkipTest):
+            self.client.exec_('import dccautomation.compat as c;'
+                              'raise c.unittest.SkipTest()')

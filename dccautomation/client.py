@@ -81,11 +81,21 @@ class Client(object):
         if code == common.INVALID_METHOD:
             raise InvalidMethod('Sent invalid method: %s' % response['value'])
         if code == common.UNHANDLED_ERROR:
-            errtype = getattr(
-                compat.builtins, response['errtype'], UnhandledError)
+            errtype = self._lookup_errtype(response['errtype'])
             raise errtype(response['traceback'])
         raise UnhandledResponse('Unhandled response: %s, %s' % (
             code, response))
+
+    def _lookup_errtype(self, errtype):
+        """
+        Return a concrete type for a corresponding exception type name.
+        """
+        result = getattr(compat.builtins, errtype, None)
+        if result:
+            return result
+        if errtype == 'SkipTest':
+            return compat.unittest.SkipTest
+        return UnhandledError
 
     def eval_(self, s):
         """Evaluate the given string in global scope on the server,
