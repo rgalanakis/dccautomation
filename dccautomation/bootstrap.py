@@ -65,13 +65,15 @@ class Handshaker(object):
 
     def __enter__(self):
         self._handshake_info = utils.create_rep_socket_bound_to_random()
-        self._environ[common.ENV_HANDSHAKE_ENDPOINT] = self._handshake_info.endpoint
+        self._environ[common.ENV_HANDSHAKE_ENDPOINT] = (
+            self._handshake_info.endpoint)
         self._environ[common.ENV_CONFIGNAME] = self._config.cfgname()
         return self
 
     def __exit__(self, exc_type, *_):
         if exc_type is None:
-            self.app_endpoint = self._config.loads(self._handshake_info.socket.recv())
+            self.app_endpoint = self._config.loads(
+                self._handshake_info.socket.recv())
             self._handshake_info.socket.send(b'')
             self._handshake_info.socket.close()
 
