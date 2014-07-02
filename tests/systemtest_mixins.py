@@ -33,7 +33,7 @@ class SystemTests(object):
     def test_timeout(self):
         self.client.timeout_secs = 0.0
         with self.assertRaises(Timeout):
-            self.client.exec_('import time; time.sleep(0.1')
+            self.client.exec_('import time; time.sleep(0.1)')
 
     def test_invalid_method(self):
         with self.assertRaises(InvalidMethod):
