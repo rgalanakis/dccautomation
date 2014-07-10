@@ -11,8 +11,8 @@
 dccautomation
 =============
 
-Library for external control or automation of any application that hosts a
-Python interpreter.
+The **dccautomation** library for external control or automation
+of any application that hosts a Python interpreter.
 This is very useful when writing automated tests or systems against
 a program, such as Autodesk Maya, that does not behave like a normal
 Python interpreter.
@@ -191,3 +191,5 @@ The initial concepts of ``dccautomation`` were developed during my time
 at CCP Games.
 I give special thanks to my former colleagues there for proving that given the
 right opportunity and tools, people can improve and excel.
+
+.. _dccautomation library: http://dccautomation.readthedocs.org/en/latest/
