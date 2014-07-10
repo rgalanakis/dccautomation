@@ -23,6 +23,13 @@ if os.path.exists(readme_dest):
     os.remove(readme_dest)
 shutil.copyfile(readme_src, readme_dest)
 
+# patch out zmq
+import imp
+sys.modules['zmq'] = imp.new_module('zmq')
+# noinspection PyUnresolvedReferences
+# Must be imported or docs fail with the zmq patch, not sure why.
+import dccautomation
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
