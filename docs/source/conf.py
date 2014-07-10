@@ -14,14 +14,13 @@
 
 import sys
 import os
-import shutil
 
 sys.path.append('../..')
-readme_src = os.path.join('..', '..', 'README.rst')
-readme_dest = '_copied_readme.rst'
-if os.path.exists(readme_dest):
-    os.remove(readme_dest)
-shutil.copyfile(readme_src, readme_dest)
+with open('../../README.rst') as f:
+    readmesrc = f.readlines()
+readmesrc.insert(0, ':orphan:\n\n')
+with open('_copied_readme.rst', 'w') as f:
+    f.writelines(readmesrc)
 
 # patch out zmq
 import imp

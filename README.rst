@@ -1,5 +1,3 @@
-:orphan:
-
 .. image:: https://travis-ci.org/rgalanakis/dccautomation.svg?branch=master
     :target: https://travis-ci.org/rgalanakis/dccautomation
     :alt: build status
