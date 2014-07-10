@@ -1,5 +1,6 @@
 """
-Contains the :class:`Config` base class,
+The ``dccautomation.configs`` module is the primary module clients will
+need to use. It contains the :class:`Config` base class,
 and a number of pre-defined subclasses for popular DCC applications
 and platforms.
 You can get a config instance by its class name using
@@ -115,6 +116,8 @@ Maya = _get_first_valid('maya linux/windows', Maya2015OSX)
 
 
 def config_by_name(name):
+    """Return the first config type that has a member/type name matching
+    ``name``."""
     for membername, cls in _inspect.getmembers(
             _sys.modules[__name__], _inspect.isclass):
         if membername == name:

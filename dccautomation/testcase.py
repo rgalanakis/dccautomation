@@ -9,7 +9,7 @@ class RemoteTestCase(unittest.TestCase):
     """
     Subclass for test classes which should execute in the DCC process.
     This is sort of magical, and you can generally stay out of it
-    by overriding this class and some of its attributes::
+    by overriding this class and some of its attributes:
 
     - config: A subclass of :class:`dccautomation.configs.Config`.
       Do *not* use an instance of it.

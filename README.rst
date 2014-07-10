@@ -1,3 +1,5 @@
+:orphan:
+
 .. image:: https://travis-ci.org/rgalanakis/dccautomation.svg?branch=master
     :target: https://travis-ci.org/rgalanakis/dccautomation
     :alt: build status
@@ -8,10 +10,10 @@
     :alt: coverage status
     :align: right
 
-dccautomation
-=============
+dccautomation: Take control of your programs
+============================================
 
-The **dccautomation** library for external control or automation
+The `dccautomation library`_ facilitates the external control or automation
 of any application that hosts a Python interpreter.
 This is very useful when writing automated tests or systems against
 a program, such as Autodesk Maya, that does not behave like a normal
@@ -24,6 +26,11 @@ This is conceptually a simple and already served RPC mechanism,
 but the complications of various DCC packages makes a package like
 ``dccautomation`` hugely beneficial, since it is both extensively
 unit and production tested.
+
+- **dccautomation** on GitHub: https://github.com/rgalanakis/dccautomation
+- **dccautomation** on Read the Docs: http://dccautomation.readthedocs.org/
+- **dccautomation** on Travis-CI: https://travis-ci.org/rgalanakis/dccautomation
+- **dccautomation** on Coveralls: https://coveralls.io/r/rgalanakis/dccautomation
 
 Usage
 =====
