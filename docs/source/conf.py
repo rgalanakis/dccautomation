@@ -16,7 +16,7 @@ import sys
 import os
 import shutil
 
-sys.path.append('..')
+sys.path.append('../..')
 readme_src = os.path.join('..', '..', 'README.rst')
 readme_dest = '_copied_readme.rst'
 if os.path.exists(readme_dest):
