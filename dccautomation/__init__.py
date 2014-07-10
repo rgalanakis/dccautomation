@@ -1,3 +1,7 @@
+from ._about import (
+    version, version_info, __version__,
+    __author__, __email__, __url__, __license__)
+
 from .bootstrap import start_server_process, ServerProc
 from .client import (
     Client, Closed, InvalidMethod, Timeout, UnhandledError, UnhandledResponse
