@@ -14,6 +14,14 @@
 
 import sys
 import os
+import shutil
+
+thisdir = os.path.dirname(__file__)
+readme_src = os.path.join(thisdir, '..', '..', 'README.rst')
+readme_dest = os.path.join(thisdir, '_copied_readme.rst')
+if os.path.exists(readme_dest):
+    os.remove(readme_dest)
+shutil.copyfile(readme_src, readme_dest)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

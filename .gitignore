@@ -54,3 +54,6 @@ docs/_build/
 
 .idea/
 .DS_Store
+
+# See index.rst
+_copied_readme.rst
