@@ -1,4 +1,5 @@
 import os
+import time
 
 import mock
 
@@ -46,6 +47,10 @@ class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
             cl.socket.close()
         else:
             raise AssertionError('Could not find an open port.')
+        # Since server is on a thread, allow it to run.
+        # Normally the handshake will act as synchronization,
+        # but we aren't using a handshake here.
+        time.sleep(0.1)
         return cl
 
 
