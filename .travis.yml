@@ -2,13 +2,24 @@ language: python
 python:
   - "2.7"
 env:
-  - TOX_ENV=py26
-  - TOX_ENV=py27
-  - TOX_ENV=py33
-  - TOX_ENV=py34
+  - TOX_ENV=py26zmq
+  - TOX_ENV=py27zmq
+  - TOX_ENV=py33zmq
+  - TOX_ENV=py34zmq
+  - TOX_ENV=py26nano
+  - TOX_ENV=py27nano
+  - TOX_ENV=py33nano
+  - TOX_ENV=py34nano
 install:
   - "pip install tox --download-cache $HOME/.pip-cache"
   - "pip install coveralls --download-cache $HOME/.pip-cache"
+  - git clone --quiet --depth=100 "https://github.com/nanomsg/nanomsg.git" ~/builds/nanomsg
+      && pushd ~/builds/nanomsg
+      && ./autogen.sh
+      && ./configure
+      && make
+      && sudo make install
+      && popd;
 script:
   - tox -e $TOX_ENV
 after_success:
