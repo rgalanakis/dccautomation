@@ -41,11 +41,11 @@ class SystemTests(object):
 
     def test_close(self):
         cl = self.new_client()
-        self.assertFalse(utils.is_open(cl.serverproc.endpoint))
+        utils.assert_open(cl.serverproc, False)
         cl.close_all()
         with self.assertRaises(Closed):
             cl.exec_('1')
-        self.assertTrue(utils.is_open(cl.serverproc.endpoint))
+        utils.assert_open(cl.serverproc)
 
     def test_skipped_is_reraised_and_not_an_error(self):
         with self.assertRaises(compat.unittest.SkipTest):

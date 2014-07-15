@@ -2,7 +2,6 @@ import os
 import sys
 import threading
 import traceback
-import zmq
 
 from . import common, compat, configs, utils
 
@@ -10,7 +9,7 @@ from . import common, compat, configs, utils
 def _get_appsock_from_handshake(config, handshake_endpoint):
     app_info = utils.create_rep_socket_bound_to_random()
 
-    handshake_sock = zmq.Context().socket(zmq.REQ)
+    handshake_sock = compat.MQ.socket(compat.MQ.REQ)
     handshake_sock.connect(handshake_endpoint)
     handshake_sock.send(config.dumps(app_info.endpoint))
     handshake_sock.recv()
@@ -50,7 +49,7 @@ def start_server():
         if not app_endpoint:
             sys.exit('%s must be set if not using a handshake.'
                      % common.ENV_APP_ENDPOINT)
-        sock = zmq.Context().socket(zmq.REP)
+        sock = compat.MQ.socket(compat.MQ.REP)
         sock.bind(app_endpoint)
 
     logger = utils.logger(__name__, app_endpoint)

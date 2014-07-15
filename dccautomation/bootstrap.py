@@ -6,9 +6,8 @@ such as process startup and handshaking.
 import atexit
 import os
 import subprocess
-import zmq
 
-from . import common, utils
+from . import common, compat, utils
 
 
 def _one_up_dir(f):
@@ -90,7 +89,7 @@ def start_server_process(config):
         env['PYTHONPATH'] = '{0}{sep}{1}{sep}{2}'.format(
             pythonpath,
             _one_up_dir(__file__),
-            _one_up_dir(zmq.__file__),
+            _one_up_dir(compat.MQ.__file__),
             sep=os.path.pathsep)
         proc = subprocess.Popen(config.popen_args(), env=env)
         atexit.register(proc.kill)

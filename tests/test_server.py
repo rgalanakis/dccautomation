@@ -38,9 +38,14 @@ class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
     def new_client(cls):
         cls._port_counter += 1
         cfg = configs.CurrentPython()
-        cl = inproc.start_inproc_client(cfg, cls._port_counter)
-        assert utils.is_open(cl.serverproc.endpoint)
-        inproc.start_inproc_server(cfg, cls._port_counter)
+        for _ in compat.range(100):
+            cl = inproc.start_inproc_client(cfg, cls._port_counter)
+            if utils.is_open(cl.serverproc.endpoint):
+                inproc.start_inproc_server(cfg, cls._port_counter)
+                break
+            cl.socket.close()
+        else:
+            raise AssertionError('Could not find an open port.')
         return cl
 
 

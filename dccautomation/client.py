@@ -3,7 +3,6 @@ All client-only code.
 """
 
 import time
-import zmq
 
 from . import common, compat, utils
 
@@ -49,7 +48,7 @@ class Client(object):
         self._closed = False
 
     def _create_socket(self):
-        socket = zmq.Context().socket(zmq.REQ)
+        socket = compat.MQ.socket(compat.MQ.REQ)
         socket.connect(self.serverproc.endpoint)
         return socket
 
@@ -64,9 +63,11 @@ class Client(object):
         starttime = time.time()
         while True:
             try:
-                recved = self.socket.recv(zmq.NOBLOCK)
+                recved = compat.MQ.recv_noblock(self.socket)
                 break
-            except zmq.Again:
+            except compat.MQ.errtype as ex:
+                if ex.errno != compat.MQ.EAGAIN:
+                    raise
                 if time.time() - starttime > self.timeout_secs:
                     self.socket = self._create_socket()
                     raise Timeout('Timed out after %ss' % self.timeout_secs)
