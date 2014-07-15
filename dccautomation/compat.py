@@ -58,6 +58,10 @@ def _zmq():
             sock = self.socket(self.REP)
             sock.bind(endpoint)
             return sock
+
+        def closes_reliably(self):
+            return True
+
     return ZmqBackend()
 
 def _nano():
@@ -70,18 +74,24 @@ def _nano():
         def socket(self, socktype):
             return nanomsg.Socket(socktype)
 
-        def recv_noblock(self, socket):
-            return socket.recv(flags=nanomsg.DONTWAIT)
+        def recv_noblock(self, socket_):
+            return socket_.recv(flags=nanomsg.DONTWAIT)
 
         def __getattr__(self, item):
             return getattr(nanomsg, item)
 
         def exclusive_bind(self, endpoint):
+            # nanomq will re-use its endpoint in the same process,
+            # so we need to use Python's socket module.
             path = endpoint.split('://')[-1]
             ip, port = path.split(':')
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.bind((ip, int(port)))
             return s
+
+        def closes_reliably(self):
+            # See https://github.com/rgalanakis/dccautomation/issues/1
+            return False
 
     return NanomsgBackend()
 

@@ -45,7 +45,8 @@ class SystemTests(object):
         cl.close_all()
         with self.assertRaises(Closed):
             cl.exec_('1')
-        utils.assert_open(cl.serverproc)
+        if compat.MQ.closes_reliably():
+            utils.assert_open(cl.serverproc)
 
     def test_skipped_is_reraised_and_not_an_error(self):
         with self.assertRaises(compat.unittest.SkipTest):
