@@ -9,7 +9,6 @@ You can get a config instance by its class name using
 
 import inspect as _inspect
 import json as _json
-import os as _os
 import sys as _sys
 
 
@@ -30,9 +29,8 @@ class Config(object):
 
     def cfgname(self):
         """
-        Return the configuration name.
-        Used when many configs should share the same name
-        (such as various OS flavors of a DCC app).
+        Return the configuration name,
+        which should almost always be the type name.
         """
         return type(self).__name__
 
@@ -72,13 +70,6 @@ class UnsupportedConfig(Config, Exception):
         raise self
 
 
-def _get_first_valid(unsupported_msg, *configs):
-    for cfg in configs:
-        if _os.path.exists(cfg.exe):
-            return cfg
-    return UnsupportedConfig(unsupported_msg)
-
-
 class CurrentPython(Config):
     """
     The current executable.
@@ -111,9 +102,6 @@ class _MayaOSXConfig(Config):
         return '/Applications/Autodesk/maya%s/Maya.app/Contents/bin/maya' % (
             self.year)
 
-    def cfgname(self):
-        return 'Maya'
-
     def popen_args(self):
         return [
             self.exe,
@@ -133,8 +121,6 @@ class Maya2015OSX(_MayaOSXConfig):
 
 class Maya2011OSX(_MayaOSXConfig):
     year = 2011
-
-Maya = _get_first_valid('maya linux/windows', Maya2015OSX)
 
 
 def config_by_name(name):
