@@ -13,6 +13,16 @@ import os as _os
 import sys as _sys
 
 
+class classproperty(property):
+    def __init__(self, fget):
+        fget = classmethod(fget)
+        property.__init__(self, fget)
+
+    # noinspection PyMethodOverriding
+    def __get__(self, cls, owner):
+        return self.fget.__get__(None, owner)()
+
+
 class Config(object):
     """
     Configuration for a controllable process.
@@ -92,8 +102,14 @@ class SystemPython(Config):
     exe = 'python'
 
 
-class Maya2015OSX(Config):
-    exe = '/Applications/Autodesk/maya2015/Maya.app/Contents/bin/maya'
+class _MayaOSXConfig(Config):
+    year = None
+
+    @classproperty
+    def exe(self):
+        assert self.year is not None, 'year must be set by subclass.'
+        return '/Applications/Autodesk/maya%s/Maya.app/Contents/bin/maya' % (
+            self.year)
 
     def cfgname(self):
         return 'Maya'
@@ -111,6 +127,12 @@ class Maya2015OSX(Config):
             return lambda func, *a, **kw: func(*a, **kw)
         return maya.utils.executeInMainThreadWithResult
 
+
+class Maya2015OSX(_MayaOSXConfig):
+    year = 2015
+
+class Maya2011OSX(_MayaOSXConfig):
+    year = 2011
 
 Maya = _get_first_valid('maya linux/windows', Maya2015OSX)
 
