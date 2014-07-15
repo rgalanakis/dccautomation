@@ -20,7 +20,7 @@ class ServerProc(object):
 
     :param popen: The ``subprocess.Popen`` instance representing the server
       process. Can usually be None if you didn't start the process.
-    :type popen: subprocess.Popen
+    :type popen: subprocess.Popen | None
     :param endpoint: Endpoint string pointing to the server process.
     :param config: Configuration the server was started with.
     :type config: dccautomation.configs.Confg

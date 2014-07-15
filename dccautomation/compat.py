@@ -93,9 +93,9 @@ elif _env == 'nano':
 else:
     assert not _env, 'Unrecognized backend: %s' % _env
     try:
-        MQ = _zmq()
+        MQ = _nano()
     except ImportError:
         try:
-            MQ = _nano()
+            MQ = _zmq()
         except ImportError:
             raise ImportError('pyzmq or nanomsg-python must be installed.')

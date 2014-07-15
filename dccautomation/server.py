@@ -55,6 +55,7 @@ def start_server():
     logger = utils.logger(__name__, app_endpoint)
     exec_context = config.exec_context()
     keep_going = True
+    logger.debug('Starting server loop.')
     while keep_going:
         recved = sock.recv()
         try:
@@ -76,6 +77,7 @@ def start_server():
                 'value': value
             }
         except Exception as ex:
+            logger.debug('unhandled error occured!')
             response = {
                 'code': common.UNHANDLED_ERROR,
                 'errtype': ex.__class__.__name__,
@@ -83,7 +85,9 @@ def start_server():
             }
         logger.debug('send: %s', response)
         sock.send(config.dumps(response))
+    logger.debug('closing.')
     sock.close()
+    logger.debug('server socket closed.')
 
 
 def start_server_thread():

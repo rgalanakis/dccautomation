@@ -36,9 +36,9 @@ class StartServerNoHandshakeTests(systemtest_mixins.SystemTests,
 
     @classmethod
     def new_client(cls):
-        cls._port_counter += 1
         cfg = configs.CurrentPython()
         for _ in compat.range(100):
+            cls._port_counter += 1
             cl = inproc.start_inproc_client(cfg, cls._port_counter)
             if utils.is_open(cl.serverproc.endpoint):
                 inproc.start_inproc_server(cfg, cls._port_counter)
