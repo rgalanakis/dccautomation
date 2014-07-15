@@ -111,8 +111,6 @@ class _MayaOSXConfig(Config):
 
     def exec_context(self):
         import maya
-        if maya.cmds.about(batch=True):
-            return lambda func, *a, **kw: func(*a, **kw)
         return maya.utils.executeInMainThreadWithResult
 
 
