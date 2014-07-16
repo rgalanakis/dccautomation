@@ -21,7 +21,7 @@ install:
       && sudo make install
       && popd;
 script:
-  - tox -e $TOX_ENV
+  - LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib tox -e $TOX_ENV
 after_success:
   - coveralls
 cache:
