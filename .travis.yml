@@ -10,6 +10,10 @@ env:
   - TOX_ENV=py27nano
   - TOX_ENV=py33nano
   - TOX_ENV=py34nano
+  - TOX_ENV=py26fifo
+  - TOX_ENV=py27fifo
+  - TOX_ENV=py33fifo
+  - TOX_ENV=py34fifo
 install:
   - "pip install tox --download-cache $HOME/.pip-cache"
   - "pip install coveralls --download-cache $HOME/.pip-cache"

@@ -62,7 +62,7 @@ def safe_unlink(path):
 def endpoint_to_addr(endpoint):
     path = endpoint.split('://')[-1]
     host, port = path.split(':')
-    return host, port
+    return host, int(port)
 
 
 def _zmq():
@@ -235,14 +235,14 @@ def _fifo():
                 fileobj.close()
             if not data:
                 raise FifoApiError(EAGAIN)
-            return data
+            return data.encode('utf-8')
 
         def close(self):
             if self._closed:
                 return
             if not self._bound_or_connected:
                 return
-            os.unlink(self.lockpath)
+            safe_unlink(self.lockpath)
             if not any(os.path.exists(p) for p in self.lockpaths):
                 safe_unlink(self.sendpath)
                 safe_unlink(self.recvpath)
