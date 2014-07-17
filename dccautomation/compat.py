@@ -42,6 +42,7 @@ else:
 
 
 def safe_mkfifo(path):
+    """os.mkfifo but do not raise if file exists."""
     try:
         os.mkfifo(path)
     except OSError as ex:
@@ -50,11 +51,19 @@ def safe_mkfifo(path):
 
 
 def safe_unlink(path):
+    """os.unlink but do not raise if file exists."""
     try:
         os.unlink(path)
     except OSError as ex:
         if ex.errno != errno.ENOENT:
             raise
+
+
+def endpoint_to_addr(endpoint):
+    path = endpoint.split('://')[-1]
+    host, port = path.split(':')
+    return host, port
+
 
 def _zmq():
     import zmq
@@ -100,10 +109,9 @@ def _nano():
         def exclusive_bind(self, endpoint):
             # nanomq will re-use its endpoint in the same process,
             # so we need to use Python's socket module.
-            path = endpoint.split('://')[-1]
-            ip, port = path.split(':')
+            addr = endpoint_to_addr(endpoint)
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.bind((ip, int(port)))
+            s.bind(addr)
             return s
 
         def closes_reliably(self):
@@ -113,117 +121,32 @@ def _nano():
     return NanomsgBackend()
 
 def _fifo():
-    import fcntl
+    REQ = 'REQ'
+    REP = 'REP'
+    EADDRINUSE = errno.EEXIST
+    EAGAIN = -123
+
+    def errorcode(errno_):
+        if errno_ == EAGAIN:
+            return 'EAGAIN'
+        return errno.errorcode[errno_]
 
     class FifoError(Exception):
         pass
 
     class FifoApiError(FifoError):
-        def __init__(self, errno):
-            self.errno = errno
-            FifoError.__init__(self, str(errno))
-
-    # noinspection PyAttributeOutsideInit
-    class FifoSocket(object):
-        def __init__(self, socket_type):
-            self.socket_type = socket_type
-            self.port = None
-            self._did_recv = False
-            self._setup = False
-
-        def set_paths(self, endpoint):
-            path = endpoint.split('://')[-1]
-            host, port = path.split(':')
-            self.port = port
-            self.reqpath = '/tmp/%s.%s.req.fifo' % (host, port)
-            self.reppath = '/tmp/%s.%s.rep.fifo' % (host, port)
-            reqlock = '/tmp/%s.%s.req.lock' % (host, port)
-            replock = '/tmp/%s.%s.rep.lock' % (host, port)
-            self.lockpaths = reqlock, replock
-            if self.socket_type == FifoBackend.REQ:
-                self.sendpath = self.reqpath
-                self.recvpath = self.reppath
-                self.lockpath = reqlock
-            else:
-                self.sendpath = self.reppath
-                self.recvpath = self.reqpath
-                self.lockpath = replock
-
-        def bind(self, endpoint):
-            self.set_paths(endpoint)
-            safe_mkfifo(self.sendpath)
-            safe_mkfifo(self.recvpath)
-            if os.path.exists(self.lockpath):
-                raise FifoApiError(FifoBackend.EADDRINUSE)
-            safe_mkfifo(self.lockpath)
-            self._setup = True
-
-        def connect(self, endpoint):
-            self.set_paths(endpoint)
-            safe_mkfifo(self.sendpath)
-            safe_mkfifo(self.recvpath)
-            safe_mkfifo(self.lockpath)
-            self._setup = True
-
-        def send(self, data):
-            if not self._setup:
-                raise FifoError('Must call bind or connect first.')
-            fd = os.open(self.sendpath, os.O_WRONLY)
-            # _, writes, _ = select.select([], [fd], [])
-            # assert len(writes) == 1
-            # assert writes[0] is fd
-            os.write(fd, data)
-            os.close(fd)
-
-        def recv(self, block=True):
-            if not self._setup:
-                raise FifoError('Must call bind or connect first.')
-            if block:
-                fd = os.open(self.recvpath, os.O_RDONLY)
-                reads, _, _ = select.select([fd], [], [])
-            else:
-                fd = os.open(self.recvpath, os.O_RDONLY | os.O_NONBLOCK)
-                reads, _, _ = select.select([fd], [], [], 0)
-                if not reads:
-                    raise FifoApiError(FifoBackend.EAGAIN)
-            assert len(reads) == 1
-            assert reads[0] is fd
-            f = os.fdopen(fd)
-            try:
-                read = f.read()
-            except IOError as ex:
-                if ex.errno == errno.EWOULDBLOCK:
-                    raise FifoApiError(FifoBackend.EAGAIN)
-                raise
-            finally:
-                f.close()
-            if read == '':
-                raise FifoApiError(FifoBackend.EAGAIN)
-            return read
-
-        def close(self):
-            if self._setup:
-                os.unlink(self.lockpath)
-                if not any(os.path.exists(p) for p in self.lockpaths):
-                    safe_unlink(self.sendpath)
-                    safe_unlink(self.recvpath)
-            self._setup = False
-
-        def __del__(self):
-            self.close()
-
-        def __str__(self):
-            return 'FifoSock(%s, %s)' % (self.port, self.socket_type)
-
-        __repr__ = __str__
+        def __init__(self, errno_):
+            self.errno = errno_
+            FifoError.__init__(self, errno, errorcode(errno_))
 
     class FifoBackend(object):
-        REQ = 'REQ'
-        REP = 'REP'
-        EADDRINUSE = errno.EEXIST
-        EAGAIN = -123
-        errtype = FifoError
-        __file__ = sys.executable
+
+        def __init__(self):
+            self.errtype = FifoError
+            self.REQ = REQ
+            self.REP = REP
+            self.EAGAIN = EAGAIN
+            self.EADDRINUSE = EADDRINUSE
 
         def socket(self, socktype):
             return FifoSocket(socktype)
@@ -232,12 +155,106 @@ def _fifo():
             return socket_.recv(False)
 
         def exclusive_bind(self, endpoint):
-            s = self.socket(self.REP)
+            s = self.socket(REP)
             s.bind(endpoint)
             return s
 
         def closes_reliably(self):
             return True
+
+    class FifoSocket(object):
+        LOCK = 'lock'
+        FIFO = 'fifo'
+
+        def __init__(self, socket_type):
+            self.socket_type = socket_type
+            self.other_socket_type = REQ if socket_type == REP else REP
+            self.host = None
+            self.port = None
+            self._bound_or_connected = False
+            self._closed = False
+
+        def _get_tofrom_paths(self, pathtype):
+            def path(s):
+                return '/tmp/%s.%s.%s.%s' % (self.host, self.port, s, pathtype)
+            return path(self.socket_type), path(self.other_socket_type)
+
+        def set_paths(self, endpoint):
+            self.host, self.port = endpoint_to_addr(endpoint)
+            self.sendpath, self.recvpath = self._get_tofrom_paths(self.FIFO)
+            self.lockpaths = self._get_tofrom_paths(self.LOCK)
+            self.lockpath = self.lockpaths[0]
+            safe_mkfifo(self.sendpath)
+            safe_mkfifo(self.recvpath)
+
+        def bind(self, endpoint):
+            self.set_paths(endpoint)
+            if os.path.exists(self.lockpath):
+                raise FifoApiError(EADDRINUSE)
+            safe_mkfifo(self.lockpath)
+            self._bound_or_connected = True
+
+        def connect(self, endpoint):
+            self.set_paths(endpoint)
+            safe_mkfifo(self.lockpath)
+            self._bound_or_connected = True
+
+        def _check_state(self):
+            if self._closed or not self._bound_or_connected:
+                raise FifoError('Socket in invalid state.')
+
+        def send(self, data):
+            self._check_state()
+            fd = os.open(self.sendpath, os.O_WRONLY)
+            try:
+                os.write(fd, data)
+            finally:
+                os.close(fd)
+
+        def recv(self, blocking=True):
+            self._check_state()
+            flags = os.O_RDONLY
+            args = [[], []]
+            if not blocking:
+                flags |= os.O_NONBLOCK
+                args.append(0)
+            fd = os.open(self.recvpath, flags)
+            reads, _, _ = select.select([fd], *args)
+            if not blocking and not reads:
+                raise FifoApiError(EAGAIN)
+            assert len(reads) == 1
+            assert reads[0] is fd
+            fileobj = os.fdopen(fd)
+            try:
+                data = fileobj.read()
+            except IOError as ex:
+                if ex.errno == errno.EWOULDBLOCK:
+                    raise FifoApiError(EAGAIN)
+                raise
+            finally:
+                fileobj.close()
+            if not data:
+                raise FifoApiError(EAGAIN)
+            return data
+
+        def close(self):
+            if self._closed:
+                return
+            if not self._bound_or_connected:
+                return
+            os.unlink(self.lockpath)
+            if not any(os.path.exists(p) for p in self.lockpaths):
+                safe_unlink(self.sendpath)
+                safe_unlink(self.recvpath)
+            self._closed = True
+
+        def __del__(self):
+            self.close()
+
+        def __str__(self):
+            return 'FifoSock(%s, %s)' % (self.port, self.socket_type)
+
+        __repr__ = __str__
 
     return FifoBackend()
 
