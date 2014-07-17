@@ -258,19 +258,19 @@ def _fifo():
 
     return FifoBackend()
 
-def calc_backend(backend):
+
+BACKENDS = ('zmq', 'nano', 'fifo')
+
+def calc_backend(backend, backends=BACKENDS):
     backend = backend.lower()
-    if backend == 'zmq':
-        return _zmq()
-    if backend == 'nano':
-        return _nano()
-    if backend == 'fifo':
-        return _fifo()
+    if backend in backends:
+        return globals()['_' + backend]()
     if backend:
         raise ValueError('Unrecognized backend: %s' % backend)
-    for _func in _zmq, _nano, _fifo:
+    funcs = [globals()['_' + name] for name in backends]
+    for func in funcs:
         try:
-            return _func()
+            return func()
         except ImportError:
             pass
     msg = (

@@ -16,3 +16,6 @@ class CalcBackendTests(unittest.TestCase):
 
     def test_unknown(self):
         self.assertRaises(ValueError, compat.calc_backend, 'WTF')
+
+    def test_no_matching(self):
+        self.assertRaises(ImportError, compat.calc_backend, '', [])
