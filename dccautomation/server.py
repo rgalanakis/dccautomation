@@ -94,6 +94,6 @@ def start_server_thread():
     """
     Starts the server on a daemon thread.
     """
-    t = threading.Thread(target=start_server)
+    t = threading.Thread(target=start_server, name='dccauto-srv-thread')
     t.daemon = True
     t.start()

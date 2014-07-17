@@ -73,7 +73,7 @@ class Handshaker(object):
         if exc_type is None:
             self.app_endpoint = self._config.loads(
                 self._handshake_info.socket.recv())
-            self._handshake_info.socket.send(b'')
+            self._handshake_info.socket.send(b'ack')
             self._handshake_info.socket.close()
 
 
@@ -85,12 +85,11 @@ def start_server_process(config):
     """
     env = dict(os.environ)
     with Handshaker(config, env) as handshake:
-        pythonpath = env.get('PYTHONPATH', '')
-        env['PYTHONPATH'] = '{0}{sep}{1}{sep}{2}'.format(
-            pythonpath,
-            _one_up_dir(__file__),
-            _one_up_dir(compat.MQ.__file__),
-            sep=os.path.pathsep)
+        pythonpath = [env.get('PYTHONPATH', ''), _one_up_dir(__file__)]
+        mqfilename = getattr(compat.MQ, '__file__', None)
+        if mqfilename:
+            pythonpath.append(mqfilename)
+        env['PYTHONPATH'] = os.path.pathsep.join(pythonpath)
         proc = subprocess.Popen(config.popen_args(), env=env)
         atexit.register(proc.kill)
     return ServerProc(proc, handshake.app_endpoint, config)
