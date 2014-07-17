@@ -137,7 +137,7 @@ def _fifo():
     class FifoApiError(FifoError):
         def __init__(self, errno_):
             self.errno = errno_
-            FifoError.__init__(self, errno, errorcode(errno_))
+            FifoError.__init__(self, errno_, errorcode(errno_))
 
     class FifoBackend(object):
 
