@@ -258,18 +258,25 @@ def _fifo():
 
     return FifoBackend()
 
-MQ = _fifo()
-# _env = os.environ.get('DCCAUTO_BACKEND', '').lower()
-# if _env == 'zmq':
-#     MQ = _zmq()
-# elif _env == 'nano':
-#     MQ = _nano()
-# else:
-#     assert not _env, 'Unrecognized backend: %s' % _env
-#     try:
-#         MQ = _nano()
-#     except ImportError:
-#         try:
-#             MQ = _zmq()
-#         except ImportError:
-#             raise ImportError('pyzmq or nanomsg-python must be installed.')
+def calc_backend(backend):
+    backend = backend.lower()
+    if backend == 'zmq':
+        return _zmq()
+    if backend == 'nano':
+        return _nano()
+    if backend == 'fifo':
+        return _fifo()
+    if backend:
+        raise ValueError('Unrecognized backend: %s' % backend)
+    for _func in _zmq, _nano, _fifo:
+        try:
+            return _func()
+        except ImportError:
+            pass
+    msg = (
+        'No valid backend could be created. '
+        'pyzmq or nanomsg-python must be installed, '
+        'or you must use a Linux-based system for FIFO support.')
+    raise ImportError(msg)
+
+MQ = calc_backend(os.environ.get('DCCAUTO_BACKEND', ''))
