@@ -123,6 +123,7 @@ def _nano():
 def _fifo():
     REQ = 'REQ'
     REP = 'REP'
+    STOMP_REP = 'STOMP_REP'
     EADDRINUSE = errno.EEXIST
     EAGAIN = -123
 
@@ -145,10 +146,13 @@ def _fifo():
             self.errtype = FifoError
             self.REQ = REQ
             self.REP = REP
+            self.STOMP_REP = STOMP_REP
             self.EAGAIN = EAGAIN
             self.EADDRINUSE = EADDRINUSE
 
         def socket(self, socktype):
+            if socktype not in (REQ, REP, STOMP_REP):
+                raise ValueError('Invalid socket type %r.' % socktype)
             return FifoSocket(socktype)
 
         def recv_noblock(self, socket_):
@@ -189,7 +193,7 @@ def _fifo():
 
         def bind(self, endpoint):
             self.set_paths(endpoint)
-            if os.path.exists(self.lockpath):
+            if self.socket_type != STOMP_REP and os.path.exists(self.lockpath):
                 raise FifoApiError(EADDRINUSE)
             safe_mkfifo(self.lockpath)
             self._bound_or_connected = True
