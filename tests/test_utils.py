@@ -18,4 +18,6 @@ class IsOpenTests(compat.unittest.TestCase):
         conninfo = utils.create_rep_socket_bound_to_random()
         utils.assert_open(conninfo, False)
         conninfo.socket.close()
-        utils.assert_open(conninfo)
+        # We cannot reliably assert a socket is open after its closed,
+        # because it could have been bound.
+        # utils.assert_open(conninfo)
