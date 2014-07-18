@@ -24,6 +24,8 @@ class BackendTests(unittest.TestCase):
         self.assertRaises(ValueError, compat.MQ.socket, -18484)
 
     def test_rebind_fails(self):
+        if not compat.MQ.safe_to_rebind():
+            raise unittest.SkipTest('Test is not safe to run.')
         s1 = utils.create_rep_socket_bound_to_random()
         s2 = compat.MQ.socket(compat.MQ.REP)
         self.assertRaises(compat.MQ.errtype, s2.bind, s1.endpoint)

@@ -96,6 +96,9 @@ def _zmq():
         def closes_reliably(self):
             return True
 
+        def safe_to_rebind(self):
+            return True
+
     return ZmqBackend()
 
 def _nano():
@@ -125,6 +128,11 @@ def _nano():
 
         def closes_reliably(self):
             # See https://github.com/rgalanakis/dccautomation/issues/1
+            return False
+
+        def safe_to_rebind(self):
+            # nanomsg will segfault/assert if a socket fails to bind.
+            # This is pretty shitty and will hopefully be fixed.
             return False
 
     return NanomsgBackend()
@@ -182,6 +190,9 @@ def _fifo():
             return s
 
         def closes_reliably(self):
+            return True
+
+        def safe_to_rebind(self):
             return True
 
     # noinspection PyTypeChecker
