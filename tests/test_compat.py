@@ -38,7 +38,7 @@ class BackendTests(unittest.TestCase):
             'import tests.test_compat as tc; tc.bind_and_wait()']
         p = bootstrap.start_process(
             args, stdout=subprocess.PIPE)
-        endpoint = p.stdout.readline().strip()
+        endpoint = p.stdout.readline().strip().decode('utf-8')
         p.kill()
         p.wait()
         self.assertTrue(p.returncode)
