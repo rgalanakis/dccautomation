@@ -25,6 +25,7 @@ if sys.version_info[0] == 2:
         # noinspection PyRedundantParentheses
         exec (s) in globals, locals
 
+    # noinspection PyShadowingBuiltins
     range = xrange
 else:
     # noinspection PyUnresolvedReferences
@@ -38,6 +39,7 @@ else:
     def exec_(s, globals=None, locals=None):
         exec (s, globals, locals)
 
+    # noinspection PyShadowingBuiltins
     range = range
 
 
@@ -128,6 +130,7 @@ def _nano():
     return NanomsgBackend()
 
 def _fifo():
+    import glob
     REQ = 'REQ'
     REP = 'REP'
     EADDRINUSE = errno.EEXIST
@@ -137,6 +140,17 @@ def _fifo():
         if errno_ == EAGAIN:
             return 'EAGAIN'
         return errno.errorcode[errno_]
+
+    def pid_exists(pid):
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        return True
+
+    def touch(path):
+        with open(path, 'w'):
+            return path
 
     class FifoError(Exception):
         pass
@@ -170,7 +184,16 @@ def _fifo():
         def closes_reliably(self):
             return True
 
+    # noinspection PyTypeChecker
     class FifoSocket(object):
+        """
+        Object that emulates a zmq/nanomsg socket using FIFO on linux/OSX.
+        A pair of files are created (req/rep) and client/server
+        reads and writes to those files.
+        Some other files are created for bookkeeping purposes.
+        There are definitely some edge cases and race conditions here,
+        but it should be good enough as a fallback.
+        """
         LOCK = 'lock'
         FIFO = 'fifo'
 
@@ -179,12 +202,23 @@ def _fifo():
             self.other_socket_type = REQ if socket_type == REP else REP
             self.host = None
             self.port = None
+            self.sendpath = None
+            self.recvpath = None
+            self.lockpaths = None
+            self.lockpath = None
+            self.bindlockpath = None
             self._bound_or_connected = False
             self._closed = False
 
+        def _getpath(self, *parts):
+            assert parts
+            result = '/tmp/dccauto.%s.%s.' % (self.host, self.port)
+            result += '.'.join([str(p) for p in parts])
+            return result
+
         def _get_tofrom_paths(self, pathtype):
             def path(s):
-                return '/tmp/%s.%s.%s.%s' % (self.host, self.port, s, pathtype)
+                return self._getpath(s, pathtype)
             return path(self.socket_type), path(self.other_socket_type)
 
         def set_paths(self, endpoint):
@@ -196,15 +230,33 @@ def _fifo():
             safe_mkfifo(self.recvpath)
 
         def bind(self, endpoint):
+            """
+            Bind to an endpoint.
+
+            When we bind, we make the normal fifo and lock files,
+            but we also make a 'bindlock' file with the current process' pid.
+            Before binding, we check if a bindlock exists for the given
+            address. If it does, and the pid of the bindlock file is running,
+            we assume the address is in use, and raise an error.
+            If the pid is not running, we delete it. It was probably left
+            over after the process died and didn't clean it up.
+            """
             self.set_paths(endpoint)
-            if os.path.exists(self.lockpath):
-                raise FifoApiError(EADDRINUSE)
-            safe_mkfifo(self.lockpath)
+            if os.path.isfile(self.lockpath):
+                path = self._getpath('bindlock')
+                for existing_bindlock in glob.iglob(path + '.*'):
+                    pid = int(existing_bindlock.rsplit('.', 1)[-1])
+                    if pid_exists(pid):
+                        raise FifoApiError(EADDRINUSE)
+                    else:
+                        safe_unlink(existing_bindlock)
+            self.bindlockpath = touch(self._getpath('bindlock', os.getpid()))
+            touch(self.lockpath)
             self._bound_or_connected = True
 
         def connect(self, endpoint):
             self.set_paths(endpoint)
-            safe_mkfifo(self.lockpath)
+            touch(self.lockpath)
             self._bound_or_connected = True
 
         def _check_state(self):
@@ -251,6 +303,8 @@ def _fifo():
             if not self._bound_or_connected:
                 return
             safe_unlink(self.lockpath)
+            if self.bindlockpath:
+                safe_unlink(self.bindlockpath)
             if not any(os.path.exists(p) for p in self.lockpaths):
                 safe_unlink(self.sendpath)
                 safe_unlink(self.recvpath)
@@ -272,6 +326,7 @@ BACKENDS = ('zmq', 'nano', 'fifo')
 def calc_backend(backend, backends=BACKENDS):
     backend = backend.lower()
     if backend in backends:
+        # noinspection PyCallingNonCallable
         return globals()['_' + backend]()
     if backend:
         raise ValueError('Unrecognized backend: %s' % backend)

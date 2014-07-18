@@ -1,6 +1,9 @@
+from __future__ import print_function
+import subprocess
+import sys
 import unittest
 
-from dccautomation import compat
+from dccautomation import bootstrap, compat, utils
 
 
 class BackendTests(unittest.TestCase):
@@ -19,6 +22,35 @@ class BackendTests(unittest.TestCase):
 
     def test_invalid_socket_type(self):
         self.assertRaises(ValueError, compat.MQ.socket, -18484)
+
+    def test_rebind_fails(self):
+        s1 = utils.create_rep_socket_bound_to_random()
+        s2 = compat.MQ.socket(compat.MQ.REP)
+        self.assertRaises(compat.MQ.errtype, s2.bind, s1.endpoint)
+
+    def test_bound_socket_is_cleaned_up_in_subproc(self):
+        """Make sure that even in the event of a termination,
+        the socket can be rebound and doesn't leave some dangling state
+        like a file pointer."""
+        args = [
+            sys.executable,
+            '-c',
+            'import tests.test_compat as tc; tc.bind_and_wait()']
+        p = bootstrap.start_process(
+            args, stdout=subprocess.PIPE)
+        endpoint = p.stdout.readline().strip()
+        p.kill()
+        p.wait()
+        self.assertTrue(p.returncode)
+        s = compat.MQ.socket(compat.MQ.REP)
+        s.bind(endpoint)
+
+
+def bind_and_wait():
+    s = utils.create_rep_socket_bound_to_random()
+    print(s.endpoint)
+    while True:
+        print('')
 
 
 class CalcBackendTests(unittest.TestCase):
