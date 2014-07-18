@@ -80,16 +80,30 @@ class Handshaker(object):
 def start_server_process(config):
     """
     Starts a new server process using the given config.
+    Provides handshake environment variables for the new environment,
+    and sets up paths.
 
     :type config: dccautomation.configs.Config
     """
     env = dict(os.environ)
     with Handshaker(config, env) as handshake:
-        pythonpath = [env.get('PYTHONPATH', ''), _one_up_dir(__file__)]
-        mqfilename = getattr(compat.MQ, '__file__', None)
-        if mqfilename:
-            pythonpath.append(mqfilename)
-        env['PYTHONPATH'] = os.path.pathsep.join(pythonpath)
-        proc = subprocess.Popen(config.popen_args(), env=env)
+        proc = start_process(config.popen_args(), env)
         atexit.register(proc.kill)
     return ServerProc(proc, handshake.app_endpoint, config)
+
+
+def start_process(args, env=None, **kwargs):
+    """
+    Starts a new process.
+    The PYTHONPATH is set in the new process to be able to run
+    ``dccautomation`` code.
+    """
+    if env is None:
+        env = dict(os.environ)
+    pythonpath = [env.get('PYTHONPATH', ''), _one_up_dir(__file__)]
+    mqfilename = getattr(compat.MQ, '__file__', None)
+    if mqfilename:
+        pythonpath.append(mqfilename)
+    env['PYTHONPATH'] = os.path.pathsep.join(pythonpath)
+    proc = subprocess.Popen(args, env=env, **kwargs)
+    return proc
