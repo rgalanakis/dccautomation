@@ -148,10 +148,10 @@ def _fifo():
             self.EAGAIN = EAGAIN
             self.EADDRINUSE = EADDRINUSE
 
-        def socket(self, socktype):
-            if socktype not in (REQ, REP):
-                raise ValueError('Invalid socket type %r.' % socktype)
-            return FifoSocket(socktype)
+        def socket(self, socket_type):
+            if socket_type not in (REQ, REP):
+                raise TypeError('Invalid socket type %r.' % socket_type)
+            return FifoSocket(socket_type)
 
         def recv_noblock(self, socket_):
             return socket_.recv(False)

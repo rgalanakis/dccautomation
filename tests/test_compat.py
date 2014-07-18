@@ -11,13 +11,8 @@ class BackendTests(unittest.TestCase):
         # self.assertRaises(compat.MQ.errtype, s.send, '1')
         s.close()
 
-
-class FifoTests(unittest.TestCase):
-    def setUp(self):
-        self.MQ = compat._fifo()
-
-    def test_socket_type(self):
-        self.assertRaises(ValueError, self.MQ.socket, 'HI')
+    def test_invalid_socket_type(self):
+        self.assertRaises(TypeError, compat.MQ.socket, -18484)
 
 
 class CalcBackendTests(unittest.TestCase):
