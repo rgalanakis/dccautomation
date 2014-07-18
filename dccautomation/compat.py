@@ -65,6 +65,11 @@ def endpoint_to_addr(endpoint):
     return host, int(port)
 
 
+def _check_socket_type(backend, se):
+    if se not in (backend.REQ, backend.REP):
+        raise ValueError('Invalid socket type: %r' % se)
+
+
 def _zmq():
     import zmq
 
@@ -72,6 +77,7 @@ def _zmq():
         errtype = zmq.ZMQError
 
         def socket(self, socktype):
+            _check_socket_type(self, socktype)
             return zmq.Context().socket(socktype)
 
         def recv_noblock(self, socket):
@@ -98,6 +104,7 @@ def _nano():
         errtype = nanomsg.NanoMsgAPIError
 
         def socket(self, socktype):
+            _check_socket_type(self, socktype)
             return nanomsg.Socket(socktype)
 
         def recv_noblock(self, socket_):
@@ -149,8 +156,7 @@ def _fifo():
             self.EADDRINUSE = EADDRINUSE
 
         def socket(self, socket_type):
-            if socket_type not in (REQ, REP):
-                raise TypeError('Invalid socket type %r.' % socket_type)
+            _check_socket_type(self, socket_type)
             return FifoSocket(socket_type)
 
         def recv_noblock(self, socket_):
