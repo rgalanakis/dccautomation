@@ -1,12 +1,11 @@
 from __future__ import print_function
 import subprocess
 import sys
-import unittest
 
 from dccautomation import bootstrap, compat, utils
 
 
-class BackendTests(unittest.TestCase):
+class BackendTests(compat.unittest.TestCase):
 
     def test_uninitialized_socket_behavior(self):
         # Verify that errors are raised when recv on an unconnected REQ
@@ -25,7 +24,7 @@ class BackendTests(unittest.TestCase):
 
     def test_rebind_fails(self):
         if not compat.MQ.safe_to_rebind():
-            raise unittest.SkipTest('Test is not safe to run.')
+            raise compat.unittest.SkipTest('Test is not safe to run.')
         s1 = utils.create_rep_socket_bound_to_random()
         s2 = compat.MQ.socket(compat.MQ.REP)
         self.assertRaises(compat.MQ.errtype, s2.bind, s1.endpoint)
@@ -55,7 +54,7 @@ def bind_and_wait():
         print('')
 
 
-class CalcBackendTests(unittest.TestCase):
+class CalcBackendTests(compat.unittest.TestCase):
 
     def test_unknown(self):
         self.assertRaises(ValueError, compat.calc_backend, 'WTF')
