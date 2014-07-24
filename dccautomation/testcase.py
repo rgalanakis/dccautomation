@@ -72,8 +72,7 @@ class RemoteTestCase(unittest.TestCase):
                 self._wrapped_test(client)
             finally:
                 self._testMethodName = self.__testMethodName
-                # setup and teardown should never call a subclass version,
-
+        # setup and teardown should never call a subclass version,
         # since they should only run on the server.
         # noinspection PyAttributeOutsideInit
         self.setUp, self.tearDown = lambda *a: None, lambda *a: None
@@ -81,24 +80,20 @@ class RemoteTestCase(unittest.TestCase):
         unittest.TestCase.run(self, result)
 
     def _wrapped_test(self, client):
-        # Tell the server to execute the test.
-        # Running the test this way will propogate problems
-        # (unlike 'run', which adjusts the test result).
-        # We can look in the future at creating some sort of
-        # pickle-able test result, which would in theory be safer.
+        """
+        Tell the server to execute the test.
+        Running the test this way will propogate problems
+        (unlike 'run', which adjusts the test result).
+        We can look in the future at creating some sort of
+        pickle-able test result, which would in theory be safer.
+        """
         lines = [
             'import {testmodule} as {testalias}',
             'from dccautomation.compat import reload']
         if self.reload_test:
             lines.append('reload({testalias})')
         lines.append('tc = {testalias}.{testcase}("{testfunc}")')
-        lines.append("""for mod in tc.reload_modules:
-    reload(mod)""")
-        lines.append("""try:
-    tc.setUp()
-    tc.{testfunc}()
-finally:
-    tc.tearDown()""")
+        lines.append('tc._wrapped_test_remote()')
         teststr = '\n'.join(lines)
         formatted_str = teststr.format(
             testmodule=self.__module__,
@@ -106,3 +101,24 @@ finally:
             testcase=type(self).__name__,
             testfunc=self.__testMethodName)
         client.exec_(formatted_str)
+
+    def _wrapped_test_remote(self):
+        """
+        This function should only ever run on the server (remotely).
+        Just a helper instead of having everything in the exec string.
+        """
+        for mod in self.reload_modules:
+            reload(mod)
+        # setUp, tearDown, and doCleanups are done manually.
+        # If they raise, skip, whatever, it will be like the test itself
+        # raising or skipping.
+        # Note that TestCase.doCleanups does not error,
+        # so we handle it manually via doCleanupsUnsafe.
+        try:
+            self.setUp()
+            getattr(self, self._testMethodName)()
+        finally:
+            self.tearDown()
+            while self._cleanups:
+                function, args, kwargs = self._cleanups.pop(-1)
+                function(*args, **kwargs)

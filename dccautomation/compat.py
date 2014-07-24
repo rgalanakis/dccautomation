@@ -7,6 +7,7 @@ import os
 import select
 import sys
 
+import unittest
 try:
     # noinspection PyPackageRequirements
     import unittest2 as unittest
