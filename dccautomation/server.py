@@ -29,23 +29,25 @@ def exec_(source):
     return compat.exec_(source, _execstate, _execstate)
 
 
-def start_server():
+def start_server(env=None):
     """
     Starts the server and polls in a loop.
     The polling is blocking- eventually we may need to support
     non-blocking polling.
     """
-    configname = os.getenv(common.ENV_CONFIGNAME)
+    if env is None:
+        env = os.environ
+    configname = env.get(common.ENV_CONFIGNAME)
     if not configname:
         sys.exit('%s must be set.' % common.ENV_CONFIGNAME)
     config = configs.config_by_name(configname)
 
-    handshake_endpoint = os.getenv(common.ENV_HANDSHAKE_ENDPOINT)
+    handshake_endpoint = env.get(common.ENV_HANDSHAKE_ENDPOINT)
     if handshake_endpoint:
         sock, app_endpoint = _get_appsock_from_handshake(
             config, handshake_endpoint)
     else:
-        app_endpoint = os.getenv(common.ENV_APP_ENDPOINT)
+        app_endpoint = env.get(common.ENV_APP_ENDPOINT)
         if not app_endpoint:
             sys.exit('%s must be set if not using a handshake.'
                      % common.ENV_APP_ENDPOINT)
@@ -90,10 +92,11 @@ def start_server():
     logger.debug('server socket closed.')
 
 
-def start_server_thread():
+def start_server_thread(env=None):
     """
     Starts the server on a daemon thread.
     """
-    t = threading.Thread(target=start_server, name='dccauto-srv-thread')
+    t = threading.Thread(
+        target=start_server, args=[env], name='dccauto-srv-thread')
     t.daemon = True
     t.start()

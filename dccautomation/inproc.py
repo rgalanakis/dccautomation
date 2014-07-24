@@ -16,8 +16,12 @@ def start_inproc_client(config, port=None):
     return c
 
 
-def start_inproc_server(config, port=None):
-    os.environ[common.ENV_CONFIGNAME] = config.cfgname()
-    os.environ[common.ENV_APP_ENDPOINT] = 'tcp://127.0.0.1:%s' % (
-        port or get_default_port())
-    server.start_server_thread()
+def start_inproc_server(config_or_env, port=None):
+    if port is None:
+        port = get_default_port()
+    env = config_or_env
+    if hasattr(config_or_env, 'cfgname'):
+        env = dict(os.environ)
+        env[common.ENV_CONFIGNAME] = config_or_env.cfgname()
+        env[common.ENV_APP_ENDPOINT] = 'tcp://127.0.0.1:%s' % port
+    server.start_server_thread(env)
